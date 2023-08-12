@@ -81,3 +81,13 @@ Multiple Ratio -> (Profitable % / Loss %) * Gain:Loss
 - Now create a combined buy-sell object: For each symbol buy, look for a sell symbol.
 - Now check qty. if qty buy = qty sell, then create a single object.
 - If qty buy > qty sell, create 2 objects, one with ...
+
+
+# Pyramiding Scenario:
+Latest Buy Date = Buy Date of last record
+Buy Price = Avg of all buy price
+Invested Amount = Sum of all Invested amount
+
+Charges = Sum of all charges
+
+Recalculate: Unrealized gain, %, SL, Gains at SL

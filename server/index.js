@@ -1,25 +1,19 @@
 import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
-import { generateStockObject } from './process.js'
-import {
-  downloadZipFile,
-  readCSVFile,
-  getSum,
-  getAvg,
-  generateExcel,
-  generateNewExcel,
-} from './utils.js'
+import { combineTransactions, generateStockObject } from './process.js'
+import { downloadZipFile, readCSVFile, generateExcel } from './utils.js'
 
-downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
-downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
-let count = 0
+// downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
+// downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+
 const main = async () => {
   const buyArray = []
   const sellArray = []
+  const stocksArray = []
   // List of CSV file paths
   const csvFilePaths = [
     './downloads/tradebook-RC3216-EQ.csv',
-    './downloads/nse-dump/cm09AUG2023bhav.csv',
-    './downloads/bse-dump/BSE_EQ_BHAVCOPY_09082023.csv',
+    './downloads/nse-dump/cm11AUG2023bhav.csv',
+    './downloads/bse-dump/BSE_EQ_BHAVCOPY_11082023.csv',
   ]
 
   try {
@@ -46,13 +40,13 @@ const main = async () => {
         const tradesForSymbolPerDay = tradesPerDay.filter(
           ({ symbol }) => symbol === eachSymbol
         )
-        count++
+
         const stockObject = generateStockObject(
           tradesForSymbolPerDay,
           nseData,
-          bseData,
-          count
+          bseData
         )
+        stocksArray.push(stockObject)
         if (stockObject['Trade Type'] === 'buy') {
           buyArray.push(stockObject)
         } else {
@@ -63,8 +57,13 @@ const main = async () => {
   } catch (error) {
     console.error('An error occurred:', error)
   }
+  // const buySellArray = [...buyArray, ...sellArray].map((eachObj, idx) => ({
+  //   id: idx + 1,
+  //   ...eachObj,
+  // }))
+  const resultArray = combineTransactions(stocksArray)
   // console.log({ buyArray, sellArray })
-  generateNewExcel([{}, ...buyArray, ...sellArray])
+  // generateExcel(combinedArray)
 }
 
-// main()
+main()

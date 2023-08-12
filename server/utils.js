@@ -117,32 +117,12 @@ export const getStockParamValue = (array, param) =>
 
 export const formatValue = (value) => Number(value.toFixed(2))
 
-export const generateExcel = (array) => {
-  // Convert array of objects to worksheet
-  const worksheet = XLSX.utils.json_to_sheet(array)
-
-  // Get the range of column headers (A1:C1)
-  const range = XLSX.utils.decode_range(worksheet['!ref'])
-  for (let col = range.s.c; col <= range.e.c; col++) {
-    const headerCell = XLSX.utils.encode_cell({ c: col, r: range.s.r })
-    worksheet[headerCell].s = { bold: true }
-  }
-  // Create a new workbook
-  const workbook = XLSX.utils.book_new()
-
-  // Add the worksheet to the workbook
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Portfolio')
-
-  // Specify the file path for the XLSX file
-  const filePath = './output/investment journal.xlsx'
-
-  // Write the workbook to a file
-  XLSX.writeFile(workbook, filePath)
-
-  console.log(`XLSX file generated at: ${filePath}`)
+// Function to check if a value is a valid date in 'YYYY-MM-DD' format
+function isDate(value) {
+  const regex = /^\d{4}-\d{2}-\d{2}$/
+  return regex.test(value)
 }
-
-export const generateNewExcel = (array) => {
+export const generateExcel = (array) => {
   const mergeCellsData = [
     'A',
     'B',
@@ -163,78 +143,73 @@ export const generateNewExcel = (array) => {
     'Q',
     'R',
     'S',
-    'AA',
-    'AB',
+    'T',
+    'U',
+    'AC',
+    'AD',
+  ]
+  const subHeaders = [
+    { cell: 'V', label: 'Broker' },
+    { cell: 'W', label: 'STT' },
+    { cell: 'X', label: 'Exc. Ch.' },
+    { cell: 'Y', label: 'SEBI Ch.' },
+    { cell: 'Z', label: 'Stamp Ch.' },
+    { cell: 'AA', label: 'GST' },
+    { cell: 'AB', label: 'Income Tax' },
   ]
   // Create a new workbook and worksheet
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Portfolio')
 
+  // Set default row height for all rows
+  worksheet.properties.defaultRowHeight = 25
+
   mergeCellsData.forEach((cell) => {
     worksheet.mergeCells(`${cell}1:${cell}2`)
   })
-  worksheet.mergeCells('T1:Z1')
-  const mergedCell = worksheet.getCell('T1')
+
+  worksheet.mergeCells('V1:AB1')
+  const mergedCell = worksheet.getCell('V1')
   // Center the merged header
   mergedCell.alignment = { vertical: 'middle', horizontal: 'center' }
-  worksheet.getCell('A1').value = 'Symbol'
-  worksheet.getCell('A1').font = { bold: true }
 
-  worksheet.getCell('T1').value = 'Charges'
-  worksheet.getCell('T1').font = { bold: true }
-
-  worksheet.getCell('T2').value = 'Brokerage'
-  worksheet.getCell('T2').font = { bold: true }
-
-  worksheet.getCell('U2').value = 'STT'
-  worksheet.getCell('U2').font = { bold: true }
-
-  worksheet.getCell('V2').value = 'Exchange Charges'
-  worksheet.getCell('V2').font = { bold: true }
-
-  worksheet.getCell('W2').value = 'SEBI Charge'
-  worksheet.getCell('W2').font = { bold: true }
-
-  worksheet.getCell('X2').value = 'Stamp charges'
-  worksheet.getCell('X2').font = { bold: true }
-
-  worksheet.getCell('Y2').value = 'GST'
-  worksheet.getCell('Y2').font = { bold: true }
-
-  worksheet.getCell('Z2').value = 'Income Tax'
-  worksheet.getCell('Z2').font = { bold: true }
+  subHeaders.forEach((eachCell) => {
+    worksheet.getCell(`${eachCell.cell}2`).value = eachCell.label
+    worksheet.getCell(`${eachCell.cell}2`).font = { bold: true }
+  })
 
   // Define column headers and set them bold
   const columns = [
-    { header: 'SNo.', key: 'SNo.', width: 15 },
+    { header: 'SNo.', key: 'id', width: 5 },
     { header: 'Symbol', key: 'Symbol', width: 15 },
     { header: 'Qty', key: 'Qty', width: 10 },
+    { header: 'Chart', key: 'Chart Link', width: 10 },
     { header: 'First Buy Date', key: 'First Buy Date', width: 15 },
     { header: 'Latest Buy Date', key: 'Latest Buy Date', width: 15 },
     { header: 'First Buy Price', key: 'First Buy Price', width: 10 },
     { header: 'Buy Price', key: 'Buy Price', width: 10 },
     { header: 'LTP', key: 'LTP', width: 10 },
-    { header: 'Exchange', key: 'Exchange', width: 10 },
-    { header: 'Trade Type', key: 'Trade Type', width: 10 },
+    { header: 'Exchange', key: 'Exchange', width: 5 },
+    { header: 'Type', key: 'Trade Type', width: 5 },
     { header: 'Invested Amount', key: 'Invested Amount', width: 15 },
     { header: 'Sell Price', key: 'Sell Price', width: 10 },
-    { header: 'Sell date', key: 'Sell date', width: 10 },
+    { header: 'Sell date', key: 'Sell date', width: 15 },
     { header: 'Realized Gain', key: 'Realized Gain', width: 10 },
-    { header: 'Unrealized Gain', key: 'Unrealized Gain', width: 20 },
+    { header: 'Unrealized Gain', key: 'Unrealized Gain', width: 10 },
     { header: 'Realized Gain %', key: 'Realized Gain %', width: 10 },
     { header: 'Unrealized Gain %', key: 'Unrealized Gain %', width: 10 },
-    { header: 'Stop Loss', key: 'Stop Loss', width: 10 },
-    { header: 'Stop Loss % Away', key: 'Stop Loss % Away', width: 10 },
-    { header: 'Gains at Stop Loss', key: 'Gains at Stop Loss', width: 10 },
-    { header: 'Charges', key: 'Brokerage', width: 10 },
-    { header: 'Charges', key: 'STT', width: 10 },
-    { header: 'Charges', key: 'Exchange Charges', width: 10 },
-    { header: 'Charges', key: 'SEBI Charge', width: 10 },
-    { header: 'Charges', key: 'Stamp charges', width: 10 },
-    { header: 'Charges', key: 'GST', width: 10 },
-    { header: 'Charges', key: 'Income Tax', width: 10 },
-    { header: 'Net Realized Gain', key: 'Net Realized Gain', width: 10 },
-    { header: 'Net Realized %', key: 'Net Realized %', width: 10 },
+    { header: 'Trailing SL', key: 'Trailing SL', width: 10 },
+    { header: 'Trailing SL %', key: 'Trailing SL %', width: 10 },
+    { header: 'Gains at SL hit', key: 'Gains at SL hit', width: 10 },
+    { header: 'Charges (Ch.)', key: 'Brokerage', width: 10 },
+    { header: 'Charges (Ch.)', key: 'STT', width: 10 },
+    { header: 'Charges (Ch.)', key: 'Exchange Charges', width: 10 },
+    { header: 'Charges (Ch.)', key: 'SEBI Charge', width: 10 },
+    { header: 'Charges (Ch.)', key: 'Stamp charges', width: 10 },
+    { header: 'Charges (Ch.)', key: 'GST', width: 10 },
+    { header: 'Charges (Ch.)', key: 'Income Tax', width: 10 },
+    { header: 'Net Real. Gain', key: 'Net Realized Gain', width: 10 },
+    { header: 'Net Real. %', key: 'Net Realized %', width: 10 },
   ]
   worksheet.columns = columns
   worksheet.getRow(1).font = { bold: true }
@@ -244,12 +219,96 @@ export const generateNewExcel = (array) => {
     worksheet.addRow(row)
   })
 
+  // Iterate through each row and cell to set alignment
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.alignment = { vertical: 'middle', horizontal: 'center' }
+    })
+  })
+
+  // Apply text wrapping to specific headers (columns A to AC)
+  for (let col = 1; col <= 30; col++) {
+    const headerCell = worksheet.getRow(1).getCell(col) // Assuming headers are in the first row
+    headerCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true,
+    }
+    headerCell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: col === 28 ? '#fcbf49' : '#92D050' }, // Orange color
+    }
+    headerCell.border = {
+      top: { style: 'thin', color: { argb: '14213d' } },
+      left: { style: 'thin', color: { argb: '14213d' } },
+      bottom: { style: 'thin', color: { argb: '14213d' } },
+      right: { style: 'thin', color: { argb: '14213d' } },
+    }
+  }
+  // Apply text wrapping to sub headers (columns A to AC)
+  for (let col = 22; col <= 28; col++) {
+    const headerCell = worksheet.getRow(2).getCell(col) // Assuming headers are in the first row
+    headerCell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: '#fcbf49' }, // Orange color
+    }
+    headerCell.border = {
+      top: { style: 'thin', color: { argb: '14213d' } },
+      left: { style: 'thin', color: { argb: '14213d' } },
+      bottom: { style: 'thin', color: { argb: '14213d' } },
+      right: { style: 'thin', color: { argb: '14213d' } },
+    }
+  }
+
+  // // Apply italics text style and change text color to blue for cells in rows 4 to 10
+  // for (let row = 4; row <= Math.min(10, array.length + 3); row++) {
+  //   const rowCells = worksheet.getRow(row).cells
+  //   rowCells.forEach((cell) => {
+  //     cell.font = { italic: true, color: { argb: '14213d' } } // Blue color
+  //   })
+  // }
+  // Apply text color to cells from column A to AD and row 4 to array.length
+  for (
+    let row = 3;
+    row <= Math.min(worksheet.actualRowCount + 1, array.length + 3);
+    row++
+  ) {
+    for (let col = 1; col <= Math.min(30, worksheet.columns.length); col++) {
+      const cell = worksheet.getCell(row, col)
+      cell.font = { italic: true, color: { argb: '14213d' } } // Blue color
+      // Apply red text color if cell value is less than 0
+      if (
+        !isDate(cell.value) &&
+        (cell.value < 0 ||
+          (typeof cell.value === 'string' && cell.value.includes('-')))
+      ) {
+        cell.font = { color: { argb: 'FFFF0000' } } // Red color
+      }
+    }
+  }
+
+  // Apply hyperlinks with shortened text to cells in column D, starting from the third row
+  for (let row = 3; row <= array.length + 2; row++) {
+    const websiteCell = worksheet.getCell(`D${row}`)
+    websiteCell.value = {
+      text: 'Chart',
+      hyperlink: worksheet.getCell(`D${row}`).value,
+    }
+    websiteCell.font = {
+      italic: true,
+      color: { argb: '#5a189a' },
+      underline: 'single',
+    }
+  }
+
   // Freeze the first column (column A)
   worksheet.views = [
     {
       state: 'frozen',
-      xSplit: 1, // Number of columns to freeze from left (1 means column A)
-      ySplit: 1, // Number of rows to freeze from top
+      xSplit: 2, // Number of columns to freeze from left (1 means column A)
+      ySplit: 2, // Number of rows to freeze from top
       topLeftCell: 'B2', // Top-left cell of the unfrozen section
     },
   ]
