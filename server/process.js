@@ -92,21 +92,38 @@ export const combineTransactions = (stocksArray) => {
   console.log(`Total unique symbols are ${uniqueSymbolsArray.length}`)
 
   uniqueSymbolsArray.forEach((eachSymbol, index) => {
-    if (index === 0) {
+    if (index === 2) {
       console.log(`Transaction for ${eachSymbol}`)
       const allTransactionsForSymbol = stocksArray.filter(
         (eachData) => eachData.Symbol === eachSymbol
       )
+      const cleanAllTransactionsForSymbol = removeFirstSellTransactions(
+        allTransactionsForSymbol
+      )
       console.log(
-        `Multiple Buy Transactions found for ${eachSymbol} are ${allTransactionsForSymbol.length}`
+        `Multiple Buy Transactions found for ${eachSymbol} are ${cleanAllTransactionsForSymbol.length}`
       )
       const processedTransaction = processAllTransactions(
-        allTransactionsForSymbol
+        cleanAllTransactionsForSymbol
       )
       resultArray.push(processedTransaction)
       console.log(resultArray)
     }
   })
+}
+
+const removeFirstSellTransactions = (allTransactionsForSymbol) => {
+  console.log(
+    `AllTransactions found for symbol ${allTransactionsForSymbol.length}`
+  )
+  const indexOfFirstBuyTransaction = allTransactionsForSymbol.findIndex(
+    (eachTransaction) => eachTransaction['Trade Type'] === 'buy'
+  )
+  if (indexOfFirstBuyTransaction === -1) {
+    return allTransactionsForSymbol
+  }
+  console.log(`indexOfFirstBuy is ${indexOfFirstBuyTransaction}`)
+  return allTransactionsForSymbol.slice(indexOfFirstBuyTransaction)
 }
 
 const processAllTransactions = (transactionsArray) => {
