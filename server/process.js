@@ -4,6 +4,15 @@ import {
   compareString,
   getStockParamValue,
   formatValue,
+  dateDifferenceGreaterThan365,
+  getIncomeTax,
+  getCharges,
+  getInvestedAmount,
+  getProfit,
+  getProfitPer,
+  getStopLossAmount,
+  getStopLossPrice,
+  logToFile,
 } from './utils.js'
 
 export const generateStockObject = (
@@ -38,6 +47,7 @@ export const generateStockObject = (
   const gst = 0.18 * (SEBICharges + exchangeCharges)
   const chartLink = `https://www.tradingview.com/chart/?symbol=${exchange}%3A${symbol}`
   const stockObject = {
+    isSettled: false,
     Symbol: symbol,
     Qty: totalQuantity,
     'Chart Link': chartLink,
@@ -83,62 +93,95 @@ const getLTP = (symbol, exchangeData, isBSE) => {
   }
 }
 
+//* This should return an array of stock objects - final data
 export const combineTransactions = (stocksArray) => {
+  const resultArray = []
   const uniqueSymbolsArray = [
     ...new Set(stocksArray.map((eachData) => eachData.Symbol)),
   ]
-  const resultArray = []
-  console.log(`Total transactions are ${stocksArray.length}`)
-  console.log(`Total unique symbols are ${uniqueSymbolsArray.length}`)
+  const factTransactions = stocksArray.filter(
+    (eachData) => eachData.Symbol === 'IONEXCHANG'
+  )
 
-  uniqueSymbolsArray.forEach((eachSymbol, index) => {
-    if (index === 2) {
-      console.log(`Transaction for ${eachSymbol}`)
-      const allTransactionsForSymbol = stocksArray.filter(
-        (eachData) => eachData.Symbol === eachSymbol
+  //* Processing transactions for each symbol and push the results to resultArray
+  uniqueSymbolsArray.forEach((eachSymbol) => {
+    const allTransactionsForSymbol = factTransactions.filter(
+      //TODO: replace with stocksArray
+      (eachData) => eachData.Symbol === eachSymbol
+    )
+    const cleanAllTransactionsForSymbol = removeFirstSellTransactions(
+      allTransactionsForSymbol
+    )
+
+    //! Check if in case received an array iterate and push to result Array
+    const processedTransaction = processAllTransactions(
+      cleanAllTransactionsForSymbol
+    )
+    if (Array.isArray(processedTransaction)) {
+      processedTransaction.forEach((transaction) =>
+        resultArray.push(transaction)
       )
-      const cleanAllTransactionsForSymbol = removeFirstSellTransactions(
-        allTransactionsForSymbol
-      )
-      console.log(
-        `Multiple Buy Transactions found for ${eachSymbol} are ${cleanAllTransactionsForSymbol.length}`
-      )
-      const processedTransaction = processAllTransactions(
-        cleanAllTransactionsForSymbol
-      )
+    } else {
       resultArray.push(processedTransaction)
-      console.log(resultArray)
     }
   })
+
+  logToFile(resultArray, 'output.json')
 }
 
 const removeFirstSellTransactions = (allTransactionsForSymbol) => {
-  console.log(
-    `AllTransactions found for symbol ${allTransactionsForSymbol.length}`
-  )
+  // console.log(
+  //   `AllTransactions found for symbol ${allTransactionsForSymbol.length}`
+  // )
   const indexOfFirstBuyTransaction = allTransactionsForSymbol.findIndex(
     (eachTransaction) => eachTransaction['Trade Type'] === 'buy'
   )
   if (indexOfFirstBuyTransaction === -1) {
     return allTransactionsForSymbol
   }
-  console.log(`indexOfFirstBuy is ${indexOfFirstBuyTransaction}`)
+  // console.log(`indexOfFirstBuy is ${indexOfFirstBuyTransaction}`)
   return allTransactionsForSymbol.slice(indexOfFirstBuyTransaction)
 }
 
+//* After processing all records for a stock, this should return me an array of transactions or a single transaction
 const processAllTransactions = (transactionsArray) => {
+  const allTransPerStock = []
+  // logToFile(transactionsArray, 'logFile.json')
   if (transactionsArray.length <= 1) {
+    if (transactionsArray.length < 1) {
+      // console.log('ATTENTION: ARRAY HAS 0 RECORDS')
+    }
     return transactionsArray
   }
   let tmpTransactionsArray = transactionsArray[0]
 
   for (let i = 0; i < transactionsArray.length - 1; i++) {
-    tmpTransactionsArray = processTwoTransactions(
+    const returnedData = processTwoTransactions(
       tmpTransactionsArray,
       transactionsArray[i + 1]
     )
+    if (returnedData !== -1) {
+      if (Array.isArray(returnedData)) {
+        tmpTransactionsArray = [...tmpTransactionsArray, ...returnedData]
+      } else {
+        if (returnedData.isSettled) {
+          allTransPerStock.push(returnedData)
+          tmpTransactionsArray = transactionsArray[i + 1]
+        } else {
+          tmpTransactionsArray = returnedData
+        }
+      }
+    } else {
+      tmpTransactionsArray = transactionsArray[i + 1]
+    }
   }
-  return tmpTransactionsArray
+
+  if (tmpTransactionsArray['Trade Type'] === 'sell') {
+    return allTransPerStock
+  } else {
+    console.log('some pending', [...allTransPerStock, tmpTransactionsArray])
+    return [...allTransPerStock, tmpTransactionsArray]
+  }
 }
 
 const processTwoTransactions = (transaction1, transaction2) => {
@@ -190,5 +233,156 @@ const processAllBuyTransaction = (transaction1, transaction2) => {
     GST: totalGst,
   }
 }
-const processAllSellTransaction = (transaction1, transaction2) => {}
-const processAllBuySellTransaction = (transaction1, transaction2) => {}
+
+const processAllSellTransaction = (transaction1, transaction2) => {
+  // console.log(`Attention SELL SELL TRANSACTION FOUND!!!`)
+}
+const processAllBuySellTransaction = (transaction1, transaction2) => {
+  if (
+    transaction1['Trade Type'] === 'buy' &&
+    transaction2['Trade Type'] === 'sell'
+  ) {
+    return processBuySellTransaction(transaction1, transaction2)
+  } else if (
+    transaction1['Trade Type'] === 'sell' &&
+    transaction2['Trade Type'] === 'buy'
+  ) {
+    return -1
+    // return processSellBuyTransaction(transaction1, transaction2)
+  }
+}
+
+const processBuySellTransaction = (transaction1, transaction2) => {
+  const buyQty = transaction1.Qty
+  const sellQty = transaction2.Qty
+
+  if (buyQty === sellQty) {
+    return handleFullSettlement(transaction1, transaction2)
+  } else if (buyQty > sellQty) {
+    const leftOverQty = sellQty - buyQty
+    const investedAmount = formatValue(sellQty * transaction1['Buy Price'])
+    const unrealizedGain = formatValue(
+      (transaction1.LTP - transaction1['Buy Price']) * sellQty
+    )
+    const unrealizedGainPer = formatValue(
+      (unrealizedGain / investedAmount) * 100
+    )
+    const stopLoss = 0.9 * transaction1['Buy Price']
+    const lossAtStopLoss = (stopLoss - transaction1['Buy Price']) * sellQty
+    const exchange = transaction1.Exchange
+    const settleBuyQty = {
+      ...transaction1,
+      Qty: sellQty,
+      'Invested Amount': investedAmount,
+      'Unrealized Gain': unrealizedGain,
+      'Unrealized Gain %': `${formatValue(unrealizedGainPer)}%`,
+      SL: formatValue(stopLoss),
+      'SL %': '10%',
+      'Loss at SL': formatValue(lossAtStopLoss),
+      STT: getCharges(investedAmount, exchange).stt,
+      'Exchange Charges': getCharges(investedAmount, exchange).exchangeCharges,
+      'SEBI Charge': getCharges(investedAmount, exchange).SEBICharges,
+      'Stamp charges': getCharges(investedAmount, exchange).stampCharges,
+      GST: getCharges(investedAmount, exchange).gst,
+      'Income Tax': isBuyTrade ? '' : '',
+      'Net Realized Gain': isBuyTrade ? '' : '',
+      'Net Realized %': isBuyTrade ? '' : '',
+    }
+    const settledObject = handleFullSettlement(settleBuyQty, transaction2)
+
+    const unsettledObject = handleLeftOverQuantity(transaction1, leftOverQty)
+    return [settledObject, unsettledObject]
+  } else {
+    // TODO: When Buy < Sell, we need to generate a complete record for buy-sell & some sell will be left we will show those sell amounts as well
+  }
+}
+
+const handleLeftOverQuantity = (transaction1, leftOverQty) => {
+  const investedAmount = getInvestedAmount(
+    leftOverQty,
+    transaction1['Buy Price']
+  )
+  const unrealizedGain = getProfit(
+    transaction1.LTP,
+    transaction1['Buy Price'],
+    leftOverQty
+  )
+  const buyPrice = transaction1['Buy Price']
+  const stopLoss = getStopLossPrice(buyPrice)
+  const unrealizedGainPer = getProfitPer(unrealizedGain, investedAmount)
+  const exchange = transaction1.Exchange
+  return {
+    ...transaction1,
+    Qty: leftOverQty,
+    'Invested Amount': investedAmount,
+    'Sell Price': '',
+    'Sell date': '',
+    'Realized Gain': '',
+    'Unrealized Gain': unrealizedGain,
+    'Realized Gain %': '',
+    'Unrealized Gain %': unrealizedGainPer,
+    SL: stopLoss,
+    'SL %': '10%',
+    'Loss at SL': getStopLossAmount(stopLoss, buyPrice, leftOverQty),
+    STT: getCharges(investedAmount, exchange).stt,
+    'Exchange Charges': getCharges(investedAmount, exchange).exchangeCharges,
+    'SEBI Charge': getCharges(investedAmount, exchange).SEBICharges,
+    'Stamp charges': getCharges(investedAmount, exchange).stampCharges,
+    GST: getCharges(investedAmount, exchange).gst,
+    'Income Tax': '',
+    'Net Realized Gain': '',
+    'Net Realized %': '',
+  }
+}
+
+const handleFullSettlement = (transaction1, transaction2) => {
+  const combinedArray = [transaction1, transaction2]
+  const sellPrice = transaction2['Sell Price']
+  const buyPrice = transaction1['Buy Price']
+  const investedAmount = transaction1['Invested Amount']
+  const buyDate = transaction1['Latest Buy Date']
+  const sellDate = transaction2['Sell date']
+  const realizedGain = formatValue((sellPrice - buyPrice) * transaction1.Qty)
+  const realizedGainPer = formatValue((realizedGain / investedAmount) * 100)
+  const stt = formatValue(getSum(combinedArray, 'STT'))
+  const exchCharges = formatValue(getSum(combinedArray, 'Exchange Charges'))
+  const sebiCharges = formatValue(getSum(combinedArray, 'SEBI Charge'))
+  const stampCharges = formatValue(getSum(combinedArray, 'Stamp charges'))
+  const gst = formatValue(getSum(combinedArray, 'GST'))
+  const incomeTax = getIncomeTax(
+    dateDifferenceGreaterThan365(buyDate, sellDate),
+    realizedGain
+  )
+
+  const totalCharges =
+    stt + exchCharges + sebiCharges + stampCharges + gst + incomeTax
+  const netRealizedGain = formatValue(realizedGain - totalCharges)
+  const netRealizedPer = formatValue((netRealizedGain / investedAmount) * 100)
+  return {
+    ...transaction1,
+    'Trade Type': 'sell',
+    'Invested Amount': investedAmount,
+    'Sell Price': sellPrice,
+    'Sell date': sellDate,
+    'Realized Gain': realizedGain,
+    'Unrealized Gain': '',
+    'Realized Gain %': `${realizedGainPer}%`,
+    'Unrealized Gain %': '',
+    SL: '',
+    'SL %': '',
+    'Loss at SL': '',
+    Brokerage: 0,
+    STT: stt,
+    'Exchange Charges': exchCharges,
+    'SEBI Charge': sebiCharges,
+    'Stamp charges': stampCharges,
+    GST: gst,
+    'Income Tax': incomeTax,
+    'Net Realized Gain': netRealizedGain,
+    'Net Realized %': `${netRealizedPer}%`,
+    isSettled: true,
+  }
+}
+const processSellBuyTransaction = (transaction1, transaction2) => {
+  // console.log(`Attention SELL BUY TRANSACTION FOUND!!!`)
+}

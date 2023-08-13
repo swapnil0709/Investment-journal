@@ -326,3 +326,62 @@ export const generateExcel = (array) => {
       console.error('Error:', error)
     })
 }
+
+export const dateDifferenceGreaterThan365 = (dateStr1, dateStr2) => {
+  const date1 = new Date(dateStr1)
+  const date2 = new Date(dateStr2)
+
+  // Calculate the time difference in milliseconds between the two dates
+  const timeDifference = Math.abs(date2 - date1)
+
+  // Convert milliseconds to days
+  const daysDifference = timeDifference / (1000 * 60 * 60 * 24)
+
+  return daysDifference > 365
+}
+
+export const getIncomeTax = (isLTCG, profit) => {
+  if (profit > 0) {
+    return isLTCG ? formatValue(0.1 * profit) : formatValue(0.15 * profit)
+  } else {
+    return 0
+  }
+}
+
+export const getCharges = (investedAmount, exchange) => {
+  const SEBICharges = formatValue(investedAmount / 1000000)
+  const stampCharges = formatValue(0.00015 * investedAmount)
+  const stt = formatValue(investedAmount / 1000)
+  const exchangeCharges =
+    exchange === 'BSE'
+      ? formatValue(0.0000375 * investedAmount)
+      : formatValue(0.0000325 * investedAmount)
+  const gst = formatValue(0.18 * (SEBICharges + exchangeCharges))
+  return {
+    stt,
+    exchangeCharges,
+    gst,
+    stampCharges,
+    SEBICharges,
+  }
+}
+
+export const getInvestedAmount = (qty, price) => formatValue(qty * price)
+export const getProfit = (sellPrice, buyPrice, qty) =>
+  formatValue((sellPrice - buyPrice) * qty)
+
+export const getProfitPer = (profit, investedAmount) =>
+  `${formatValue(profit / investedAmount)}%`
+export const getStopLossPrice = (price) => formatValue(0.9 * price)
+export const getStopLossAmount = (stopLossPrice, buyPrice, qty) =>
+  formatValue((stopLossPrice - buyPrice) * qty)
+
+export const logToFile = (data, filePath) => {
+  try {
+    const jsonData = JSON.stringify(data, null, 2) // null and 2 for pretty formatting
+    fs.appendFileSync(filePath, jsonData + '\n')
+    console.log('Data has been logged to the file.')
+  } catch (error) {
+    console.error('Error writing to file:', error)
+  }
+}

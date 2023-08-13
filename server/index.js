@@ -47,23 +47,23 @@ const main = async () => {
           bseData
         )
         stocksArray.push(stockObject)
-        if (stockObject['Trade Type'] === 'buy') {
-          buyArray.push(stockObject)
-        } else {
-          sellArray.push(stockObject)
-        }
+        // if (stockObject['Trade Type'] === 'buy') {
+        //   buyArray.push(stockObject)
+        // } else {
+        //   sellArray.push(stockObject)
+        // }
       })
     })
   } catch (error) {
     console.error('An error occurred:', error)
   }
-  // const buySellArray = [...buyArray, ...sellArray].map((eachObj, idx) => ({
+  // const resultArray = stocksArray.map((eachObj, idx) => ({
   //   id: idx + 1,
   //   ...eachObj,
   // }))
   const resultArray = combineTransactions(stocksArray)
   // console.log({ buyArray, sellArray })
-  // generateExcel(combinedArray)
+  // generateExcel(resultArray)
 }
 
 main()
