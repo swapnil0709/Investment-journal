@@ -9,6 +9,8 @@ import {
   TEXT_RED_COLOR,
   MERGE_CELLS_DATA,
   SUB_HEADERS_DATA,
+  TOTALS_COLOR,
+  WHITE_TEXT_COLOR,
 } from './excel-constants.js'
 import {
   addDataToSheet,
@@ -25,7 +27,7 @@ const isDate = (value) => {
   return regex.test(value)
 }
 
-export const generateExcel = (array, invalidsArray) => {
+export const generateExcel = (array, invalidsArray, totalObject) => {
   // Create a new workbook and worksheet
   const workbook = new ExcelJS.Workbook()
   const portfolioSheet = workbook.addWorksheet('Portfolio')
@@ -34,8 +36,26 @@ export const generateExcel = (array, invalidsArray) => {
 
   generatePortfolioTemplate(portfolioSheet, array)
   generatePortfolioTemplate(invalidsSheet, invalidsArray)
-
+  generateTotalsRow(portfolioSheet, totalObject, array)
   writeExcel(workbook)
+}
+
+const generateTotalsRow = (portfolioSheet, totalObject, array) => {
+  portfolioSheet.addRow(totalObject)
+  const totalsRow = portfolioSheet.getRow(array.length + 4)
+  totalsRow.font = {
+    bold: true,
+    italic: true,
+    color: { argb: WHITE_TEXT_COLOR },
+  }
+  totalsRow.eachCell((cell) => {
+    cell.alignment = { vertical: 'middle', horizontal: 'center' }
+  })
+  totalsRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: TOTALS_COLOR },
+  }
 }
 
 const generatePortfolioTemplate = (worksheet, array) => {

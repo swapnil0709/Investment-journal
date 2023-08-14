@@ -1,7 +1,17 @@
 import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
 import { generateExcel } from './excel.js'
-import { combineTransactions, generateStockObject } from './process.js'
-import { addIdForEachRecord, downloadZipFile, readCSVFile } from './utils.js'
+import {
+  combineTransactions,
+  generateStockObject,
+  generateTotalObject,
+} from './process.js'
+import {
+  addIdForEachRecord,
+  downloadZipFile,
+  formatValue,
+  getSum,
+  readCSVFile,
+} from './utils.js'
 
 // downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
 // downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
@@ -50,8 +60,8 @@ const main = async () => {
   const [resultArray, invalidsArray] = combineTransactions(stocksArray)
   const finalStocksData = addIdForEachRecord(resultArray)
   const finalInvalidsData = addIdForEachRecord(invalidsArray)
-
-  generateExcel(finalStocksData, finalInvalidsData)
+  const totalObject = generateTotalObject(resultArray)
+  generateExcel(finalStocksData, finalInvalidsData, totalObject)
 }
 
 main()

@@ -464,3 +464,39 @@ const handleFullSettlement = (transaction1, transaction2) => {
     isSettled: true,
   }
 }
+
+export const generateTotalObject = (resultArray) => {
+  const totalBuyAmount = resultArray.filter(
+    (eachRecord) => eachRecord['Trade Type'] === 'buy'
+  )
+  const totalInvestedAmount = formatValue(
+    getSum(totalBuyAmount, 'Invested Amount')
+  )
+  const totalRealizedGain = formatValue(getSum(resultArray, 'Realized Gain'))
+  const totalUnrealizedGain = formatValue(
+    getSum(resultArray, 'Unrealized Gain')
+  )
+  const totalNetRealizedGain = formatValue(
+    getSum(resultArray, 'Net Realized Gain')
+  )
+  const totalSTT = formatValue(getSum(resultArray, 'STT'))
+  const totalExCharges = formatValue(getSum(resultArray, 'Exchange Charges'))
+  const totalSEBICharges = formatValue(getSum(resultArray, 'SEBI Charge'))
+  const totalGst = formatValue(getSum(resultArray, 'GST'))
+  const totalStampCharges = formatValue(getSum(resultArray, 'Stamp charges'))
+  const totalIncomeTax = formatValue(getSum(resultArray, 'Income Tax'))
+
+  return {
+    Symbol: 'TOTAL',
+    'Invested Amount': totalInvestedAmount,
+    'Realized Gain': totalRealizedGain,
+    'Unrealized Gain': totalUnrealizedGain,
+    STT: totalSTT,
+    'Exchange Charges': totalExCharges,
+    'SEBI Charge': totalSEBICharges,
+    'Stamp charges': totalStampCharges,
+    GST: totalGst,
+    'Income Tax': totalIncomeTax,
+    'Net Realized Gain': totalNetRealizedGain,
+  }
+}

@@ -19,9 +19,9 @@ export const COLUMNS = [
   { header: 'Unrealized Gain', key: 'Unrealized Gain', width: 10 },
   { header: 'Realized Gain %', key: 'Realized Gain %', width: 10 },
   { header: 'Unrealized Gain %', key: 'Unrealized Gain %', width: 10 },
-  { header: 'Trailing SL', key: 'Trailing SL', width: 10 },
-  { header: 'Trailing SL %', key: 'Trailing SL %', width: 10 },
-  { header: 'Gains at SL hit', key: 'Gains at SL hit', width: 10 },
+  { header: 'SL', key: 'SL', width: 10 },
+  { header: 'SL %', key: 'SL %', width: 10 },
+  { header: 'Loss at SL', key: 'Loss at SL', width: 10 },
   { header: 'Charges (Ch.)', key: 'Brokerage', width: 10 },
   { header: 'Charges (Ch.)', key: 'STT', width: 10 },
   { header: 'Charges (Ch.)', key: 'Exchange Charges', width: 10 },
@@ -69,10 +69,12 @@ export const SUB_HEADERS_DATA = [
   { cell: 'AB', label: 'Income Tax' },
 ]
 
-export const CHARGES_COLOR = '#fcbf49'
-export const HEADERS_COLOR = '#92D050'
-export const HYPERLINK_COLOR = '#5a189a'
-export const TEXT_COLOR = '#14213d'
+export const CHARGES_COLOR = 'fcbf49'
+export const HEADERS_COLOR = '92D050'
+export const HYPERLINK_COLOR = '5a189a'
+export const TEXT_COLOR = '14213d'
+export const TOTALS_COLOR = '003566'
+export const WHITE_TEXT_COLOR = 'ffffff'
 export const TEXT_RED_COLOR = 'FFFF0000'
 
 export const OUTPUT_PATH = './output/investment journal.xlsx'
