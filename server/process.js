@@ -96,49 +96,89 @@ const getLTP = (symbol, exchangeData, isBSE) => {
 //* This should return an array of stock objects - final data
 export const combineTransactions = (stocksArray) => {
   const resultArray = []
+  const invalidTransactionsArray = []
   const uniqueSymbolsArray = [
     ...new Set(stocksArray.map((eachData) => eachData.Symbol)),
   ]
-  const factTransactions = stocksArray.filter(
-    (eachData) => eachData.Symbol === 'IONEXCHANG'
-  )
+  //! DEBUGGER FOR STOCK - Uncomment & replace the name of the stock for debugging purposes
+  // const debugStock = stocksArray.filter(
+  //   (eachData) => eachData.Symbol === 'HARSHA'
+  // )
 
   //* Processing transactions for each symbol and push the results to resultArray
   uniqueSymbolsArray.forEach((eachSymbol) => {
-    const allTransactionsForSymbol = factTransactions.filter(
-      //TODO: replace with stocksArray
+    const allTransactionsForSymbol = stocksArray.filter(
+      //! DEBUGGER FOR STOCK - Replace stocksArray with debugStock
       (eachData) => eachData.Symbol === eachSymbol
     )
-    const cleanAllTransactionsForSymbol = removeFirstSellTransactions(
-      allTransactionsForSymbol
+    const filteredTransactionsForSymbol = removeInvalidTransactions(
+      allTransactionsForSymbol,
+      invalidTransactionsArray
     )
 
-    //! Check if in case received an array iterate and push to result Array
-    const processedTransaction = processAllTransactions(
-      cleanAllTransactionsForSymbol
-    )
-    if (Array.isArray(processedTransaction)) {
-      processedTransaction.forEach((transaction) =>
-        resultArray.push(transaction)
+    if (filteredTransactionsForSymbol !== -1) {
+      const cleanAllTransactionsForSymbol = removeFirstSellTransactions(
+        filteredTransactionsForSymbol,
+        invalidTransactionsArray
       )
-    } else {
-      resultArray.push(processedTransaction)
+      if (cleanAllTransactionsForSymbol !== -1) {
+        //! Check if in case received an array iterate and push to result Array
+        const processedTransaction = processAllTransactions(
+          cleanAllTransactionsForSymbol
+        )
+
+        if (Array.isArray(processedTransaction)) {
+          processedTransaction.forEach((transaction) =>
+            resultArray.push(transaction)
+          )
+        } else {
+          resultArray.push(processedTransaction)
+        }
+      }
     }
   })
-
-  logToFile(resultArray, 'output.json')
+  return [resultArray, invalidTransactionsArray]
 }
 
-const removeFirstSellTransactions = (allTransactionsForSymbol) => {
-  // console.log(
-  //   `AllTransactions found for symbol ${allTransactionsForSymbol.length}`
-  // )
+const removeInvalidTransactions = (
+  allTransactionsForSymbol,
+  invalidTransactionsArray
+) => {
+  const buyTransactions = allTransactionsForSymbol.filter(
+    (eachTransaction) => eachTransaction['Trade Type'] === 'buy'
+  )
+  const sellTransactions = allTransactionsForSymbol.filter(
+    (eachTransaction) => eachTransaction['Trade Type'] === 'sell'
+  )
+  const totalBuyQty = getSum(buyTransactions, 'Qty')
+  const totalSellQty = getSum(sellTransactions, 'Qty')
+  if (totalBuyQty < totalSellQty) {
+    allTransactionsForSymbol.forEach((eachTransaction) =>
+      invalidTransactionsArray.push(eachTransaction)
+    )
+    return -1
+  }
+  return allTransactionsForSymbol
+}
+
+const removeFirstSellTransactions = (
+  allTransactionsForSymbol,
+  invalidTransactionsArray
+) => {
   const indexOfFirstBuyTransaction = allTransactionsForSymbol.findIndex(
     (eachTransaction) => eachTransaction['Trade Type'] === 'buy'
   )
   if (indexOfFirstBuyTransaction === -1) {
-    return allTransactionsForSymbol
+    invalidTransactionsArray.push(allTransactionsForSymbol)
+    return -1
   }
+  const invalidSellTransactions = allTransactionsForSymbol.slice(
+    0,
+    indexOfFirstBuyTransaction
+  )
+  invalidSellTransactions.forEach((eachTransac) =>
+    invalidTransactionsArray.push(eachTransac)
+  )
   // console.log(`indexOfFirstBuy is ${indexOfFirstBuyTransaction}`)
   return allTransactionsForSymbol.slice(indexOfFirstBuyTransaction)
 }
@@ -162,7 +202,9 @@ const processAllTransactions = (transactionsArray) => {
     )
     if (returnedData !== -1) {
       if (Array.isArray(returnedData)) {
-        tmpTransactionsArray = [...tmpTransactionsArray, ...returnedData]
+        const [settledObject, unsettledObject] = returnedData
+        allTransPerStock.push(settledObject)
+        tmpTransactionsArray = unsettledObject
       } else {
         if (returnedData.isSettled) {
           allTransPerStock.push(returnedData)
@@ -179,7 +221,6 @@ const processAllTransactions = (transactionsArray) => {
   if (tmpTransactionsArray['Trade Type'] === 'sell') {
     return allTransPerStock
   } else {
-    console.log('some pending', [...allTransPerStock, tmpTransactionsArray])
     return [...allTransPerStock, tmpTransactionsArray]
   }
 }
@@ -248,7 +289,6 @@ const processAllBuySellTransaction = (transaction1, transaction2) => {
     transaction2['Trade Type'] === 'buy'
   ) {
     return -1
-    // return processSellBuyTransaction(transaction1, transaction2)
   }
 }
 
@@ -259,7 +299,7 @@ const processBuySellTransaction = (transaction1, transaction2) => {
   if (buyQty === sellQty) {
     return handleFullSettlement(transaction1, transaction2)
   } else if (buyQty > sellQty) {
-    const leftOverQty = sellQty - buyQty
+    const leftOverQty = buyQty - sellQty
     const investedAmount = formatValue(sellQty * transaction1['Buy Price'])
     const unrealizedGain = formatValue(
       (transaction1.LTP - transaction1['Buy Price']) * sellQty
@@ -284,20 +324,61 @@ const processBuySellTransaction = (transaction1, transaction2) => {
       'SEBI Charge': getCharges(investedAmount, exchange).SEBICharges,
       'Stamp charges': getCharges(investedAmount, exchange).stampCharges,
       GST: getCharges(investedAmount, exchange).gst,
-      'Income Tax': isBuyTrade ? '' : '',
-      'Net Realized Gain': isBuyTrade ? '' : '',
-      'Net Realized %': isBuyTrade ? '' : '',
+      'Income Tax': '',
+      'Net Realized Gain': '',
+      'Net Realized %': '',
     }
     const settledObject = handleFullSettlement(settleBuyQty, transaction2)
 
-    const unsettledObject = handleLeftOverQuantity(transaction1, leftOverQty)
+    const unsettledObject = handleLeftOverBuyQty(transaction1, leftOverQty)
     return [settledObject, unsettledObject]
   } else {
-    // TODO: When Buy < Sell, we need to generate a complete record for buy-sell & some sell will be left we will show those sell amounts as well
+    const leftOverQty = sellQty - buyQty
+    const exchange = transaction2.Exchange
+    const sellPrice = transaction2['Sell Price']
+    const sellDate = transaction2['Sell date']
+    const sellValue = buyQty * sellPrice
+
+    const settleSellQty = {
+      ...transaction2,
+      isSettled: false,
+      Qty: buyQty,
+      'Sell Price': sellPrice,
+      'Sell date': sellDate,
+      STT: getCharges(sellValue, exchange).stt,
+      'Exchange Charges': getCharges(sellValue, exchange).exchangeCharges,
+      'SEBI Charge': getCharges(sellValue, exchange).SEBICharges,
+      'Stamp charges': getCharges(sellValue, exchange).stampCharges,
+      GST: getCharges(sellValue, exchange).gst,
+    }
+    const settledObject = handleFullSettlement(transaction1, settleSellQty)
+    const unsettledObject = handleLeftOverSellQty(transaction2, leftOverQty)
+    return [settledObject, unsettledObject]
   }
 }
 
-const handleLeftOverQuantity = (transaction1, leftOverQty) => {
+const handleLeftOverSellQty = (transaction2, leftOverQty) => {
+  const symbol = transaction2.Symbol
+  const sellPrice = transaction2['Sell Price']
+  const sellDate = transaction2['Sell date']
+  const sellValue = leftOverQty * sellPrice
+  const exchange = transaction2.Exchange
+  return {
+    ...transaction2,
+    isSettled: false,
+    Symbol: symbol,
+    Qty: leftOverQty,
+    'Sell Price': sellPrice,
+    'Sell date': sellDate,
+    STT: getCharges(sellValue, exchange).stt,
+    'Exchange Charges': getCharges(sellValue, exchange).exchangeCharges,
+    'SEBI Charge': getCharges(sellValue, exchange).SEBICharges,
+    'Stamp charges': getCharges(sellValue, exchange).stampCharges,
+    GST: getCharges(sellValue, exchange).gst,
+  }
+}
+
+const handleLeftOverBuyQty = (transaction1, leftOverQty) => {
   const investedAmount = getInvestedAmount(
     leftOverQty,
     transaction1['Buy Price']
@@ -382,7 +463,4 @@ const handleFullSettlement = (transaction1, transaction2) => {
     'Net Realized %': `${netRealizedPer}%`,
     isSettled: true,
   }
-}
-const processSellBuyTransaction = (transaction1, transaction2) => {
-  // console.log(`Attention SELL BUY TRANSACTION FOUND!!!`)
 }

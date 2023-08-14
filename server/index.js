@@ -1,13 +1,12 @@
 import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
+import { generateExcel } from './excel.js'
 import { combineTransactions, generateStockObject } from './process.js'
-import { downloadZipFile, readCSVFile, generateExcel } from './utils.js'
+import { addIdForEachRecord, downloadZipFile, readCSVFile } from './utils.js'
 
 // downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
 // downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
 
 const main = async () => {
-  const buyArray = []
-  const sellArray = []
   const stocksArray = []
   // List of CSV file paths
   const csvFilePaths = [
@@ -21,11 +20,7 @@ const main = async () => {
     const [tradebookData, nseData, bseData] = await Promise.all(promises)
 
     console.log('CSV file reading is complete.')
-    // console.log({
-    //   tradebookData: tradebookData.slice(0, 2),
-    //   nseData: nseData.slice(0, 2),
-    //   bseData: bseData.slice(0, 2),
-    // })
+
     const datesArray = tradebookData.map(({ trade_date }) => trade_date)
     const uniqueDatesArray = [...new Set(datesArray)]
     uniqueDatesArray.forEach((eachUniqueDate, idx) => {
@@ -47,23 +42,16 @@ const main = async () => {
           bseData
         )
         stocksArray.push(stockObject)
-        // if (stockObject['Trade Type'] === 'buy') {
-        //   buyArray.push(stockObject)
-        // } else {
-        //   sellArray.push(stockObject)
-        // }
       })
     })
   } catch (error) {
     console.error('An error occurred:', error)
   }
-  // const resultArray = stocksArray.map((eachObj, idx) => ({
-  //   id: idx + 1,
-  //   ...eachObj,
-  // }))
-  const resultArray = combineTransactions(stocksArray)
-  // console.log({ buyArray, sellArray })
-  // generateExcel(resultArray)
+  const [resultArray, invalidsArray] = combineTransactions(stocksArray)
+  const finalStocksData = addIdForEachRecord(resultArray)
+  const finalInvalidsData = addIdForEachRecord(invalidsArray)
+
+  generateExcel(finalStocksData, finalInvalidsData)
 }
 
 main()
