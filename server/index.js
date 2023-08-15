@@ -25,7 +25,7 @@ const PORT = 8001
 // Use the cors middleware to allow requests from the React frontend
 app.use(
   cors({
-    origin: 'https://investment-journal-flxq.vercel.app/',
+    origin: 'https://investment-journal-flxq.vercel.app',
   })
 )
 
