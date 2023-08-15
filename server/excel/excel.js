@@ -11,11 +11,14 @@ import {
   SUB_HEADERS_DATA,
   TOTALS_COLOR,
   WHITE_TEXT_COLOR,
+  METRICS_REALIZED_HEADERS,
 } from './excel-constants.js'
 import {
   addDataToSheet,
   applyTextWrapping,
   centerAlignAllText,
+  colorRows,
+  fillData,
   freezeColumns,
   setHeadersForSheet,
   writeExcel,
@@ -37,6 +40,8 @@ export const generateExcel = (array, invalidsArray, totalObject) => {
   generatePortfolioTemplate(portfolioSheet, array)
   generatePortfolioTemplate(invalidsSheet, invalidsArray)
   generateTotalsRow(portfolioSheet, totalObject, array)
+  generateMetricsTemplate(metricsSheet, totalObject, array)
+
   writeExcel(workbook)
 }
 
@@ -121,4 +126,23 @@ const generatePortfolioTemplate = (worksheet, array) => {
   }
 
   freezeColumns(worksheet, 2, 2)
+}
+
+const generateMetricsTemplate = (worksheet, totalObject, array) => {
+  // Set default row height for all rows
+  worksheet.properties.defaultRowHeight = ROW_HEIGHT
+
+  // Merge cells, add heading, and center align in bold
+  worksheet.mergeCells('A1:S1')
+  colorRows(worksheet, [1, 2], HEADERS_COLOR)
+  const mergedCell = worksheet.getCell('A1')
+  mergedCell.value = 'Portfolio Metrics'
+  mergedCell.alignment = { horizontal: 'center', vertical: 'middle' }
+  mergedCell.font = { bold: true, color: { argb: TEXT_COLOR } }
+
+  generateMetricsTable(worksheet)
+}
+
+const generateMetricsTable = (worksheet) => {
+  fillData(worksheet, '3', 'C', METRICS_REALIZED_HEADERS)
 }

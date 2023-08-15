@@ -1,5 +1,5 @@
 import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
-import { generateExcel } from './excel.js'
+import { generateExcel } from './excel/excel.js'
 import {
   combineTransactions,
   generateStockObject,

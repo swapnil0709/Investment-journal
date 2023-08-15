@@ -1,5 +1,19 @@
+// Configs
 export const ROW_HEIGHT = 25
 
+// Colors
+export const CHARGES_COLOR = 'fcbf49'
+export const HEADERS_COLOR = '92D050'
+export const HYPERLINK_COLOR = '5a189a'
+export const TEXT_COLOR = '14213d'
+export const TOTALS_COLOR = '003566'
+export const WHITE_TEXT_COLOR = 'ffffff'
+export const TEXT_RED_COLOR = 'FFFF0000'
+
+// Path
+export const OUTPUT_PATH = './output/investment_journal_v1.0.xlsx'
+
+// Data
 export const COLUMNS = [
   { header: 'SNo.', key: 'id', width: 5 },
   { header: 'Symbol', key: 'Symbol', width: 15 },
@@ -69,12 +83,16 @@ export const SUB_HEADERS_DATA = [
   { cell: 'AB', label: 'Income Tax' },
 ]
 
-export const CHARGES_COLOR = 'fcbf49'
-export const HEADERS_COLOR = '92D050'
-export const HYPERLINK_COLOR = '5a189a'
-export const TEXT_COLOR = '14213d'
-export const TOTALS_COLOR = '003566'
-export const WHITE_TEXT_COLOR = 'ffffff'
-export const TEXT_RED_COLOR = 'FFFF0000'
-
-export const OUTPUT_PATH = './output/investment journal.xlsx'
+export const METRICS_REALIZED_HEADERS = [
+  { label: 'Analysis of realised profits' },
+  { label: 'Realized profits' },
+  { label: 'Capital on which profits have been realized' },
+  { label: 'Realized profit %' },
+  { label: 'No. of trades completed' },
+  { label: 'Profitable %' },
+  { label: 'Loss %' },
+  { label: 'Average gain' },
+  { label: 'Average loss' },
+  { label: 'Gain:Loss' },
+  { label: 'Multiple ratio' },
+]

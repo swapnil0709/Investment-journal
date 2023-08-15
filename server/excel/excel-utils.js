@@ -75,3 +75,38 @@ export const applyTextWrapping = (
     }
   }
 }
+
+export const colorRows = (worksheet, rowsArray, color) => {
+  rowsArray.forEach((row) => {
+    const selectedRow = worksheet.getRow(row)
+    selectedRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: color },
+    }
+  })
+}
+
+export const clearAllBorders = (worksheet) => {
+  // Clear all cell borders and their colors
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.border = undefined
+    })
+  })
+}
+
+export const fillData = (worksheet, startRowIndex, colName, data) => {
+  let rowIndex = startRowIndex
+  worksheet.getColumn(colName).width = 25
+  data.forEach((eachData) => {
+    const eachCell = worksheet.getCell(`${colName}${rowIndex}`)
+    eachCell.value = eachData.label
+    eachCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true,
+    }
+    rowIndex++
+  })
+}
