@@ -2,6 +2,7 @@ import https from 'https'
 import fs from 'fs'
 import AdmZip from 'adm-zip'
 import csv from 'csv-parser'
+import path from 'path'
 
 const today = new Date()
 const day = String(today.getDate()).padStart(2, '0')
@@ -58,7 +59,8 @@ export const downloadZipFile = (url, extractionPath) => {
         console.error('Failed to download the zip file')
         return
       }
-
+      const isNSE = url.includes('nse')
+      const fileName = isNSE ? 'nse-dump.csv' : 'bse-dump.csv'
       const data = []
       response.on('data', (chunk) => data.push(chunk))
       response.on('end', () => {
@@ -69,6 +71,24 @@ export const downloadZipFile = (url, extractionPath) => {
           fs.mkdirSync(extractionPath, { recursive: true }) // Create extraction directory
           zip.extractAllTo(extractionPath, true)
           console.log('Zip file extracted to:', extractionPath)
+
+          // List the files in the extraction directory
+          const extractedFiles = fs.readdirSync(extractionPath)
+
+          // Assuming there's only one CSV file in the extraction directory
+
+          const originalCsvPath = path.join(extractionPath, extractedFiles[0])
+          const newCsvPath = path.join(extractionPath, fileName) // Replace 'new_filename.csv' with your desired new name
+
+          // If a file with the new name already exists, remove it
+          if (fs.existsSync(newCsvPath)) {
+            fs.unlinkSync(newCsvPath)
+          }
+
+          // Rename the CSV file
+          fs.renameSync(originalCsvPath, newCsvPath)
+
+          console.log('CSV file renamed.')
         } catch (error) {
           console.error('Error extracting zip file:', error)
         }

@@ -5,24 +5,18 @@ import {
   generateStockObject,
   generateTotalObject,
 } from './process.js'
-import {
-  addIdForEachRecord,
-  downloadZipFile,
-  formatValue,
-  getSum,
-  readCSVFile,
-} from './utils.js'
+import { addIdForEachRecord, downloadZipFile, readCSVFile } from './utils.js'
 
-// downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
-// downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
+downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
 
 const main = async () => {
   const stocksArray = []
   // List of CSV file paths
   const csvFilePaths = [
     './downloads/tradebook-RC3216-EQ.csv',
-    './downloads/nse-dump/cm11AUG2023bhav.csv',
-    './downloads/bse-dump/BSE_EQ_BHAVCOPY_11082023.csv',
+    './downloads/nse-dump/nse-dump.csv',
+    './downloads/bse-dump/bse-dump.csv',
   ]
 
   try {
