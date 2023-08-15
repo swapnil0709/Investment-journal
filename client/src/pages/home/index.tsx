@@ -14,8 +14,7 @@ const ExcelReader: React.FC = () => {
   }
   const handleDownload = () => {
     // Trigger the download
-    window.location.href =
-      'https://investment-journal-1x1tim4u5-swapnil0709.vercel.app/download'
+    window.location.href = 'https://investment-journal.vercel.app/download'
   }
   const handleUpload = (): void => {
     if (selectedFile) {
@@ -23,10 +22,7 @@ const ExcelReader: React.FC = () => {
       formData.append('csvFile', selectedFile)
 
       axios
-        .post(
-          'https://investment-journal-1x1tim4u5-swapnil0709.vercel.app/upload',
-          formData
-        )
+        .post('https://investment-journal.vercel.app/upload', formData)
         .then((response) => {
           console.log(response.data.message)
           setIsUploaded(!response.data.isError)
