@@ -97,14 +97,31 @@ export const readCSVFile = (filePath) => {
   })
 }
 
+export const convertPerToNumber = (percentageString) => {
+  const isString = typeof percentageString === 'string'
+  // Remove the percentage sign and convert to a number
+  return isString
+    ? parseFloat(percentageString.replace('%', ''))
+    : percentageString
+}
+
 export const getSum = (array, param) =>
   array.reduce(
     (accumulator, currentValue) => accumulator + Number(currentValue[param]),
     0
   )
+export const getSumPer = (array, param) =>
+  array.reduce((accumulator, currentValue) => {
+    return accumulator + convertPerToNumber(currentValue[param])
+  }, 0)
 
 export const getAvg = (array, param) => {
   const avg = getSum(array, param) / array.length
+  return Number(avg.toFixed(2))
+}
+
+export const getAvgPer = (array, param) => {
+  const avg = getSumPer(array, param) / array.length
   return Number(avg.toFixed(2))
 }
 
@@ -115,6 +132,8 @@ export const getStockParamValue = (array, param) =>
   array?.length ? array[0][param] : ''
 
 export const formatValue = (value) => Number(value.toFixed(2))
+
+export const formatePer = (value) => `${formatValue(value)}%`
 
 export const dateDifferenceGreaterThan365 = (dateStr1, dateStr2) => {
   const date1 = new Date(dateStr1)
@@ -180,4 +199,50 @@ export const addIdForEachRecord = (array) => {
     id: idx + 1,
     ...eachObj,
   }))
+}
+
+export const getTotalGain = (array, param) => formatValue(getSum(array, param))
+
+export const getMetricsData = (allTrades, totalGain, param) => {
+  const capitalOnProfits = formatValue(getSum(allTrades, 'Invested Amount'))
+  const profitPer = `${formatValue((totalGain / capitalOnProfits) * 100)}%`
+  const paramPer = `${param} %`
+  const noOfTrades = allTrades.length
+
+  const countOfGains = allTrades.filter(
+    (eachTrade) => eachTrade[param] > 0
+  ).length
+
+  const profitablePer = formatValue((countOfGains / noOfTrades) * 100)
+
+  const lossPer = 100 - profitablePer
+
+  const positiveGainPerArray = allTrades.filter(
+    (eachTrade) => convertPerToNumber(eachTrade[paramPer]) > 0
+  )
+
+  const negativeGainPerArray = allTrades.filter(
+    (eachTrade) => convertPerToNumber(eachTrade[paramPer]) < 0
+  )
+
+  const avgGain = getAvgPer(positiveGainPerArray, paramPer)
+
+  const avgLoss = getAvgPer(negativeGainPerArray, paramPer)
+
+  const gainLoss = formatValue((avgGain / avgLoss) * -1)
+
+  const multipleRatio = formatValue((profitablePer / lossPer) * gainLoss)
+
+  return {
+    profits: totalGain,
+    capitalOnWhichProfits: capitalOnProfits,
+    profitsPer: profitPer,
+    noOfTradesCompleted: noOfTrades,
+    profitablePer: formatePer(profitablePer),
+    lossPer: formatePer(lossPer),
+    avgGain,
+    avgLoss,
+    gainLoss,
+    multipleRatio,
+  }
 }

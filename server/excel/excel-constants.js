@@ -1,5 +1,6 @@
 // Configs
 export const ROW_HEIGHT = 25
+export const ROW_WIDTH = 25
 
 // Colors
 export const CHARGES_COLOR = 'fcbf49'
@@ -89,10 +90,38 @@ export const METRICS_REALIZED_HEADERS = [
   { label: 'Capital on which profits have been realized' },
   { label: 'Realized profit %' },
   { label: 'No. of trades completed' },
-  { label: 'Profitable %' },
-  { label: 'Loss %' },
+  { label: 'Profitable % (win rate)' },
+  { label: 'Loss % (win rate)' },
   { label: 'Average gain' },
   { label: 'Average loss' },
-  { label: 'Gain:Loss' },
-  { label: 'Multiple ratio' },
+  { label: 'Gain:Loss (risk:reward)' },
+  { label: 'Multiple ratio (winrate * risk:reward)' },
+]
+
+export const METRICS_UNREALIZED_HEADERS = [
+  { label: 'Analysis of unrealised profits' },
+  { label: 'Unrealized profits' },
+  { label: 'Capital on which profits have been unrealized' },
+  { label: 'Unealized profit %' },
+  { label: 'No. of trades completed' },
+  { label: 'Profitable % (win rate)' },
+  { label: 'Loss % (win rate)' },
+  { label: 'Average gain' },
+  { label: 'Average loss' },
+  { label: 'Gain:Loss (risk:reward)' },
+  { label: 'Multiple ratio (winrate * risk:reward)' },
+]
+
+export const IDEAL_HEADERS = [
+  { label: 'Ideal' },
+  { label: '' },
+  { label: '' },
+  { label: '' },
+  { label: '' },
+  { label: '> 45%' },
+  { label: '< 55%' },
+  { label: '' },
+  { label: '' },
+  { label: 'Atleast 3' },
+  { label: 'Has to be atleast 2' },
 ]

@@ -12,7 +12,9 @@ import {
   getProfitPer,
   getStopLossAmount,
   getStopLossPrice,
-  logToFile,
+  convertPerToNumber,
+  getMetricsData,
+  getTotalGain,
 } from './utils.js'
 
 export const generateStockObject = (
@@ -466,26 +468,39 @@ const handleFullSettlement = (transaction1, transaction2) => {
 }
 
 export const generateTotalObject = (resultArray) => {
-  const totalBuyAmount = resultArray.filter(
+  const allBuyTrades = resultArray.filter(
     (eachRecord) => eachRecord['Trade Type'] === 'buy'
   )
+  const allSellTrades = resultArray.filter(
+    (eachRecord) => eachRecord['Trade Type'] === 'sell'
+  )
+
   const totalInvestedAmount = formatValue(
-    getSum(totalBuyAmount, 'Invested Amount')
+    getSum(allBuyTrades, 'Invested Amount')
   )
-  const totalRealizedGain = formatValue(getSum(resultArray, 'Realized Gain'))
-  const totalUnrealizedGain = formatValue(
-    getSum(resultArray, 'Unrealized Gain')
-  )
+  const totalRealizedGain = getTotalGain(resultArray, 'Realized Gain')
+  const totalUnrealizedGain = getTotalGain(resultArray, 'Unrealized Gain')
+
   const totalNetRealizedGain = formatValue(
     getSum(resultArray, 'Net Realized Gain')
   )
+
   const totalSTT = formatValue(getSum(resultArray, 'STT'))
   const totalExCharges = formatValue(getSum(resultArray, 'Exchange Charges'))
   const totalSEBICharges = formatValue(getSum(resultArray, 'SEBI Charge'))
   const totalGst = formatValue(getSum(resultArray, 'GST'))
   const totalStampCharges = formatValue(getSum(resultArray, 'Stamp charges'))
   const totalIncomeTax = formatValue(getSum(resultArray, 'Income Tax'))
-
+  const realizedMetrics = getMetricsData(
+    allSellTrades,
+    totalRealizedGain,
+    'Realized Gain'
+  )
+  const unrealizedMetrics = getMetricsData(
+    allBuyTrades,
+    totalUnrealizedGain,
+    'Unrealized Gain'
+  )
   return {
     Symbol: 'TOTAL',
     'Invested Amount': totalInvestedAmount,
@@ -498,5 +513,7 @@ export const generateTotalObject = (resultArray) => {
     GST: totalGst,
     'Income Tax': totalIncomeTax,
     'Net Realized Gain': totalNetRealizedGain,
+    realizedMetrics,
+    unrealizedMetrics,
   }
 }

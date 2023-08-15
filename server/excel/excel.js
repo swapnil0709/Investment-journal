@@ -12,6 +12,8 @@ import {
   TOTALS_COLOR,
   WHITE_TEXT_COLOR,
   METRICS_REALIZED_HEADERS,
+  METRICS_UNREALIZED_HEADERS,
+  IDEAL_HEADERS,
 } from './excel-constants.js'
 import {
   addDataToSheet,
@@ -20,6 +22,7 @@ import {
   colorRows,
   fillData,
   freezeColumns,
+  generateFillData,
   setHeadersForSheet,
   writeExcel,
 } from './excel-utils.js'
@@ -133,16 +136,45 @@ const generateMetricsTemplate = (worksheet, totalObject, array) => {
   worksheet.properties.defaultRowHeight = ROW_HEIGHT
 
   // Merge cells, add heading, and center align in bold
-  worksheet.mergeCells('A1:S1')
+  worksheet.mergeCells('A1:K1')
+  worksheet.mergeCells('C3:D3')
+  worksheet.mergeCells('J3:K3')
+
   colorRows(worksheet, [1, 2], HEADERS_COLOR)
   const mergedCell = worksheet.getCell('A1')
   mergedCell.value = 'Portfolio Metrics'
   mergedCell.alignment = { horizontal: 'center', vertical: 'middle' }
   mergedCell.font = { bold: true, color: { argb: TEXT_COLOR } }
 
-  generateMetricsTable(worksheet)
+  const realizedData = generateFillData(
+    totalObject.realizedMetrics,
+    METRICS_REALIZED_HEADERS[0]
+  )
+  const unrealizedData = generateFillData(
+    totalObject.unrealizedMetrics,
+    METRICS_UNREALIZED_HEADERS[0]
+  )
+
+  generateMetricsTable(
+    worksheet,
+    METRICS_REALIZED_HEADERS,
+    realizedData,
+    '3',
+    'C',
+    'D'
+  )
+  generateMetricsTable(
+    worksheet,
+    METRICS_UNREALIZED_HEADERS,
+    unrealizedData,
+    '3',
+    'J',
+    'K'
+  )
+  fillData(worksheet, '3', 'G', IDEAL_HEADERS, 'header', 10)
 }
 
-const generateMetricsTable = (worksheet) => {
-  fillData(worksheet, '3', 'C', METRICS_REALIZED_HEADERS)
+const generateMetricsTable = (worksheet, headers, data, row, col1, col2) => {
+  fillData(worksheet, row, col1, headers, 'header')
+  fillData(worksheet, row, col2, data, 'data')
 }

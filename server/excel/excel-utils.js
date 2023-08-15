@@ -1,4 +1,14 @@
-import { OUTPUT_PATH } from './excel-constants.js'
+import { convertPerToNumber } from '../utils.js'
+import {
+  CHARGES_COLOR,
+  HEADERS_COLOR,
+  OUTPUT_PATH,
+  ROW_WIDTH,
+  TEXT_COLOR,
+  TEXT_RED_COLOR,
+  TOTALS_COLOR,
+  WHITE_TEXT_COLOR,
+} from './excel-constants.js'
 
 export const writeExcel = (workbook) => {
   // Write the workbook to a file
@@ -96,9 +106,20 @@ export const clearAllBorders = (worksheet) => {
   })
 }
 
-export const fillData = (worksheet, startRowIndex, colName, data) => {
+export const fillData = (
+  worksheet,
+  startRowIndex,
+  colName,
+  data,
+  type,
+  customWidth = ROW_WIDTH
+) => {
   let rowIndex = startRowIndex
-  worksheet.getColumn(colName).width = 25
+  const isHeader = type === 'header'
+  const headingName = `${colName}${startRowIndex}`
+  const headerCell = worksheet.getCell(headingName)
+
+  worksheet.getColumn(colName).width = customWidth
   data.forEach((eachData) => {
     const eachCell = worksheet.getCell(`${colName}${rowIndex}`)
     eachCell.value = eachData.label
@@ -107,6 +128,68 @@ export const fillData = (worksheet, startRowIndex, colName, data) => {
       horizontal: 'center',
       wrapText: true,
     }
+    eachCell.font = {
+      bold: isHeader ? true : false,
+      italic: true,
+      color: { argb: TEXT_COLOR },
+    }
+    if (isHeader) {
+      eachCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: CHARGES_COLOR },
+      }
+    }
+    handleValidationHighlighting(eachData, eachCell)
     rowIndex++
   })
+  headerCell.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: TOTALS_COLOR },
+  }
+  headerCell.font = {
+    color: { argb: WHITE_TEXT_COLOR },
+  }
+}
+
+export const generateFillData = (object, header) => {
+  const resultArray = [header]
+  for (let key in object) {
+    resultArray.push({ key: key, label: object[key] })
+  }
+  return resultArray
+}
+
+const handleValidationHighlighting = (eachData, cell) => {
+  switch (eachData?.key) {
+    case 'profitablePer':
+      applyTextColourOnCondition(eachData, cell, 45, 'less')
+      break
+    case 'lossPer':
+      applyTextColourOnCondition(eachData, cell, 55, 'greater')
+      break
+    case 'gainLoss':
+      applyTextColourOnCondition(eachData, cell, 3, 'less')
+      break
+    case 'multipleRatio':
+      applyTextColourOnCondition(eachData, cell, 2, 'less')
+      break
+
+    default:
+  }
+}
+
+const applyTextColourOnCondition = (eachData, cell, value, compareType) => {
+  const compareCondition =
+    compareType === 'greater'
+      ? convertPerToNumber(eachData?.label) > value
+      : convertPerToNumber(eachData?.label) < value
+  if (compareCondition) {
+    cell.font = {
+      bold: true,
+      italic: true,
+      color: { argb: TEXT_RED_COLOR },
+    }
+  }
 }
