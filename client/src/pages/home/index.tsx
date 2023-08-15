@@ -1,37 +1,62 @@
-import React, { useEffect, useState } from 'react'
-import * as XLSX from 'xlsx'
-import ExcelUploader from '../../components/file-uploader'
-import { cleanExcelData } from '../../utils'
+import axios from 'axios'
+import React, { ChangeEvent, useState } from 'react'
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
 
 const ExcelReader: React.FC = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [excelData, setExcelData] = useState<null | any[]>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploaded, setIsUploaded] = useState(false)
 
-  const handleFileUpload = (file: File) => {
-    const reader = new FileReader()
-
-    reader.onload = (e) => {
-      const data = e.target?.result as string
-      const workbook = XLSX.read(data, { type: 'binary' })
-      const sheetName = workbook.SheetNames[0]
-      const sheet = workbook.Sheets[sheetName]
-      const jsonData = XLSX.utils.sheet_to_json(sheet)
-      setExcelData(cleanExcelData(jsonData))
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0])
     }
-
-    reader.readAsBinaryString(file)
   }
+  const handleDownload = () => {
+    // Trigger the download
+    window.location.href = 'http://localhost:8001/download'
+  }
+  const handleUpload = (): void => {
+    if (selectedFile) {
+      const formData = new FormData()
+      formData.append('csvFile', selectedFile)
 
-  useEffect(() => {
-    if (excelData?.length) {
-      console.log(excelData)
+      axios
+        .post('http://localhost:8001/upload', formData)
+        .then((response) => {
+          console.log(response.data.message)
+          setIsUploaded(!response.data.isError)
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+        })
     }
-  }, [excelData])
-
+  }
   return (
-    <div>
-      <h2>Excel File Upload</h2>
-      <ExcelUploader onFileUpload={handleFileUpload} />
+    <div className='logo'>
+      <div className='input-wrapper'>
+        <input
+          type='file'
+          accept='.csv'
+          onChange={handleFileChange}
+          className='custom-input'
+          placeholder='Upload file'
+        />
+      </div>
+
+      {/* <input type='file' accept='.csv' onChange={handleFileChange} /> */}
+      <button disabled={isUploaded} onClick={handleUpload}>
+        Upload CSV
+      </button>
+      <button disabled={!isUploaded} onClick={handleDownload}>
+        Download Excel
+      </button>
+      {isUploaded && (
+        <Alert severity='success'>
+          <AlertTitle>Successfully Uploaded!</AlertTitle>
+          Now click on — <strong>Download Excel!</strong>
+        </Alert>
+      )}
     </div>
   )
 }

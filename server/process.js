@@ -12,7 +12,6 @@ import {
   getProfitPer,
   getStopLossAmount,
   getStopLossPrice,
-  convertPerToNumber,
   getMetricsData,
   getTotalGain,
 } from './utils.js'

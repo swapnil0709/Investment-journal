@@ -1,0 +1,25 @@
+.typing-container {
+    display: inline-block;
+    overflow: hidden;
+  }
+  
+  .typing-text {
+    font-size: 24px;
+    white-space: nowrap;
+    color: white;
+  }
+  
+  .cursor {
+    animation: blink-caret 0.2s step-end infinite;
+    color: white;
+  }
+  
+  @keyframes blink-caret {
+    from, to {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  

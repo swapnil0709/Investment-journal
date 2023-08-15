@@ -1,13 +1,19 @@
-import "./App.css";
-import ExcelReader from "./pages/home";
+import './App.css'
+import TypingAnimation from './components/typing-animation'
+import ExcelReader from './pages/home'
 
 function App() {
   return (
     <>
-      Hello
-     <ExcelReader/>
+      <div className='header'>
+        <TypingAnimation text='Welcome To Investment Journal Generator!!' />
+        <br />
+        <TypingAnimation text={`Say no to mundane work, when I'm here :) `} />
+      </div>
+      <ExcelReader />
+      <div className='signature'>Created by: Swapnil</div>
     </>
-  );
+  )
 }
 
-export default App;
+export default App
