@@ -23,11 +23,7 @@ const app = express()
 const PORT = 8001
 
 // Use the cors middleware to allow requests from the React frontend
-app.use(
-  cors({
-    origin: 'https://investment-journal-jyu6.vercel.app/',
-  })
-)
+app.use(cors())
 
 // Get the directory name of the current module
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -57,6 +53,10 @@ const upload = multer({
       cb(new Error('Only CSV files are allowed.'))
     }
   },
+})
+
+app.get('/', (req, res) => {
+  res.send('Hello, from server!')
 })
 
 // Define a POST route for file upload
