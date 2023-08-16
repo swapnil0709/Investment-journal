@@ -37,18 +37,17 @@ app.use(
     credentials: true,
   })
 )
-
-// Get the directory name of the current module
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
 // Check if both directories are empty
 const isBseEmpty = isDirectoryEmpty(BSE_DIR_PATH)
 const isNseEmpty = isDirectoryEmpty(NSE_DIR_PATH)
 
+// Get the directory name of the current module
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
 // Call the custom function if both directories are empty
 if (isBseEmpty && isNseEmpty) {
-  downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
-  downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+  downloadZipFile(NSE_DUMP_URL, NSE_DIR_PATH)
+  downloadZipFile(BSE_DUMP_URL, BSE_DIR_PATH)
 } else {
   console.log('Directories are not empty.')
 }
@@ -57,14 +56,14 @@ if (isBseEmpty && isNseEmpty) {
 
 cron.schedule('0 20 * * * ', () => {
   console.log(`cron ran successfully at 8pm`)
-  downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
-  downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+  downloadZipFile(NSE_DUMP_URL, NSE_DIR_PATH)
+  downloadZipFile(BSE_DUMP_URL, BSE_DIR_PATH)
 })
 
 cron.schedule('0 8 * * * ', () => {
   console.log(`cron ran successfully at 8am`)
-  downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
-  downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+  downloadZipFile(NSE_DUMP_URL, NSE_DIR_PATH)
+  downloadZipFile(BSE_DUMP_URL, BSE_DIR_PATH)
 })
 
 // Configure multer to handle CSV file uploads
