@@ -1,9 +1,11 @@
 import {
   BSE_DIR_PATH,
   BSE_DUMP_URL,
+  BSE_FILE_NAME,
   BSE_FILE_PATH,
   NSE_DIR_PATH,
   NSE_DUMP_URL,
+  NSE_FILE_NAME,
   NSE_FILE_PATH,
 } from './const.js'
 import { generateExcel } from './excel/excel.js'
@@ -15,7 +17,7 @@ import {
 import {
   addIdForEachRecord,
   downloadZipFile,
-  isDirectoryEmpty,
+  isCSVFilePresent,
   readCSVFile,
 } from './utils.js'
 import express from 'express'
@@ -37,19 +39,21 @@ app.use(
     credentials: true,
   })
 )
-// Check if both directories are empty
-const isBseEmpty = isDirectoryEmpty(BSE_DIR_PATH)
-const isNseEmpty = isDirectoryEmpty(NSE_DIR_PATH)
 
 // Get the directory name of the current module
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-// Call the custom function if both directories are empty
-if (isBseEmpty && isNseEmpty) {
-  downloadZipFile(NSE_DUMP_URL, NSE_DIR_PATH)
-  downloadZipFile(BSE_DUMP_URL, BSE_DIR_PATH)
+if (isCSVFilePresent(BSE_DIR_PATH, BSE_FILE_NAME)) {
+  console.log('BSE dump present')
 } else {
-  console.log('Directories are not empty.')
+  console.log('Downloading BSE dump')
+  downloadZipFile(BSE_DUMP_URL, BSE_DIR_PATH)
+}
+if (isCSVFilePresent(NSE_DIR_PATH, NSE_FILE_NAME)) {
+  console.log('NSE dump present')
+} else {
+  console.log('Downloading NSE dump')
+  downloadZipFile(NSE_DUMP_URL, NSE_DIR_PATH)
 }
 
 // Schedule cron jobs
