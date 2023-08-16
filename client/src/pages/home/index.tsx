@@ -6,7 +6,7 @@ import AlertTitle from '@mui/material/AlertTitle'
 const ExcelReader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploaded, setIsUploaded] = useState(false)
-
+  axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (event.target.files && event.target.files.length > 0) {
       setSelectedFile(event.target.files[0])
@@ -14,7 +14,8 @@ const ExcelReader: React.FC = () => {
   }
   const handleDownload = () => {
     // Trigger the download
-    window.location.href = 'https://investment-journal.vercel.app/download'
+    window.location.href =
+      'https://investment-journal-server.vercel.app/download'
   }
   const handleUpload = (): void => {
     if (selectedFile) {
@@ -22,7 +23,7 @@ const ExcelReader: React.FC = () => {
       formData.append('csvFile', selectedFile)
 
       axios
-        .post('https://investment-journal.vercel.app/upload', formData)
+        .post('https://investment-journal-server.vercel.app/upload', formData)
         .then((response) => {
           console.log(response.data.message)
           setIsUploaded(!response.data.isError)
