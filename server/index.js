@@ -23,7 +23,13 @@ const app = express()
 const PORT = 8001
 
 // Use the cors middleware to allow requests from the React frontend
-app.use(cors())
+app.use(
+  cors({
+    origin: ['https://investment-journal.vercel.app'],
+    methods: ['POST', 'GET'],
+    credentials: true,
+  })
+)
 
 // Get the directory name of the current module
 const __dirname = dirname(fileURLToPath(import.meta.url))
