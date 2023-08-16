@@ -280,3 +280,14 @@ const createDirectoryIfNotExists = (dirPath) => {
     fs.mkdirSync(dirPath, { recursive: true })
   }
 }
+
+export const isCSVFilePresent = (directoryPath, fileName) => {
+  const filePath = path.join(directoryPath, fileName)
+
+  try {
+    const stats = fs.statSync(filePath)
+    return stats.isFile() && path.extname(filePath).toLowerCase() === '.csv'
+  } catch (error) {
+    return false
+  }
+}

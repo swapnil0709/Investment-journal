@@ -30,5 +30,8 @@ export const NSE_FILE_PATH = join(
   'nse-dump.csv'
 )
 
+export const BSE_FILE_NAME = 'bse-dump.csv'
+export const NSE_FILE_NAME = 'nse-dump.csv'
+
 // export const localFilePath = './downloadedFile.txt'
 // console.log({ NSE_DUMP_URL, BSE_DUMP_URL })
