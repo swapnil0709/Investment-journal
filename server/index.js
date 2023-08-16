@@ -1,4 +1,11 @@
-import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
+import {
+  BSE_DIR_PATH,
+  BSE_DUMP_URL,
+  BSE_FILE_PATH,
+  NSE_DIR_PATH,
+  NSE_DUMP_URL,
+  NSE_FILE_PATH,
+} from './const.js'
 import { generateExcel } from './excel/excel.js'
 import {
   combineTransactions,
@@ -8,7 +15,7 @@ import {
 import {
   addIdForEachRecord,
   downloadZipFile,
-  logToFile,
+  isDirectoryEmpty,
   readCSVFile,
 } from './utils.js'
 import express from 'express'
@@ -33,6 +40,18 @@ app.use(
 
 // Get the directory name of the current module
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// Check if both directories are empty
+const isBseEmpty = isDirectoryEmpty(BSE_DIR_PATH)
+const isNseEmpty = isDirectoryEmpty(NSE_DIR_PATH)
+
+// Call the custom function if both directories are empty
+if (isBseEmpty && isNseEmpty) {
+  downloadZipFile(NSE_DUMP_URL, './downloads/nse-dump')
+  downloadZipFile(BSE_DUMP_URL, './downloads/bse-dump')
+} else {
+  console.log('Directories are not empty.')
+}
 
 // Schedule cron jobs
 
@@ -115,10 +134,7 @@ app.listen(PORT, () => {
 const main = async (tradebookData) => {
   const stocksArray = []
   // List of CSV file paths
-  const csvFilePaths = [
-    './downloads/nse-dump/nse-dump.csv',
-    './downloads/bse-dump/bse-dump.csv',
-  ]
+  const csvFilePaths = [NSE_FILE_PATH, BSE_FILE_PATH]
 
   try {
     const promises = csvFilePaths.map(readCSVFile)

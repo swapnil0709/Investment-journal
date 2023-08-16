@@ -266,3 +266,17 @@ export const getMetricsData = (allTrades, totalGain, param) => {
     multipleRatio,
   }
 }
+
+// Function to check if a directory is empty
+export const isDirectoryEmpty = (path) => {
+  createDirectoryIfNotExists(path)
+  const files = fs.readdirSync(path)
+  return files.length === 0
+}
+
+// Function to create a directory if it doesn't exist
+const createDirectoryIfNotExists = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true })
+  }
+}
