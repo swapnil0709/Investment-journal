@@ -5,7 +5,8 @@ import AlertTitle from '@mui/material/AlertTitle'
 
 const ExcelReader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [isError, setIsError] = useState(false)
   axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (event.target.files && event.target.files.length > 0) {
@@ -21,6 +22,7 @@ const ExcelReader: React.FC = () => {
 
     const formData = new FormData()
     formData.append('csvFile', selectedFile)
+    console.log({ selectedFile, formData })
 
     try {
       const response = await axios.post<Blob>(
@@ -45,8 +47,9 @@ const ExcelReader: React.FC = () => {
       document.body.appendChild(link)
       link.click()
       link.remove()
-      setSuccess(true)
+      setIsSuccess(true)
     } catch (error) {
+      setIsError(true)
       console.error('Error uploading and downloading file:', error)
     }
   }
@@ -65,9 +68,14 @@ const ExcelReader: React.FC = () => {
       <button disabled={!selectedFile} onClick={handleUploadAndDownload}>
         Upload CSV and Download Excel
       </button>
-      {success && (
+      {isSuccess && (
         <Alert severity='success'>
-          <AlertTitle>Successfully Uploaded!</AlertTitle>
+          <AlertTitle>Successfully Uploaded! ✅</AlertTitle>
+        </Alert>
+      )}
+      {isError && (
+        <Alert severity='error'>
+          <AlertTitle>An Error Occurred 🙁</AlertTitle>
         </Alert>
       )}
     </div>
