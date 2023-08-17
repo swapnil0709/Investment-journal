@@ -11,7 +11,7 @@ function App() {
         <TypingAnimation text={`Say no to mundane work, when I'm here :) `} />
       </div>
       <ExcelReader />
-      <div className='signature'>Created by: Swapnil</div>
+      <div className='signature'>Created by: Swapnil ❤️</div>
     </>
   )
 }

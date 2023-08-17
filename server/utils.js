@@ -3,6 +3,9 @@ import fs from 'fs'
 import AdmZip from 'adm-zip'
 import csv from 'csv-parser'
 import path from 'path'
+import unzipper from 'unzipper'
+import axios from 'axios'
+import CsvFile from './mongodb/models/csvfile.js'
 
 const today = new Date()
 const day = String(today.getDate()).padStart(2, '0')
@@ -34,6 +37,77 @@ export const getCurrentMonthAbbreviation = () => {
 }
 
 export const NSE_DATE = `${day}${getCurrentMonthAbbreviation()}${CURRENT_YEAR}`
+
+export const downloadExtractAndStoreCsvFiles = async (zipUrl) => {
+  try {
+    const isNSE = zipUrl.includes('nse')
+    const fileName = isNSE ? 'nse-dump.csv' : 'bse-dump.csv'
+    console.log({ fileName })
+    const response = await axios.get(zipUrl, { responseType: 'arraybuffer' })
+    const zipBuffer = Buffer.from(response.data)
+    const extractedFiles = await unzipper.Open.buffer(zipBuffer)
+
+    const csvFiles = extractedFiles.files.filter((file) =>
+      file.path.endsWith('.csv')
+    )
+
+    for (const csvFile of csvFiles) {
+      console.log(`Downloaded & extracted file: ${csvFile}`)
+      const csvBuffer = await csvFile.buffer()
+      const newName = fileName // Replace with the new name
+
+      // Check if a record with the same name already exists
+      const existingRecord = await CsvFile.findOne({ name: newName })
+
+      if (existingRecord) {
+        // Update the existing record with new CSV data
+        existingRecord.data = csvBuffer
+        await existingRecord.save()
+      } else {
+        // Create a new record
+        const newCsvFile = new CsvFile({
+          name: newName,
+          data: csvBuffer,
+          contentType: 'text/csv',
+        })
+        await newCsvFile.save()
+      }
+    }
+
+    console.log('CSV files extracted, renamed, and updated in MongoDB.')
+  } catch (error) {
+    console.error('Error occurred while processing the ZIP file:', error)
+  }
+}
+
+export const readCsvDataFromDatabase = async (fileName) => {
+  try {
+    const csvFile = await CsvFile.findOne({ name: fileName })
+
+    if (!csvFile) {
+      throw new Error(`CSV file "${fileName}" not found.`)
+    }
+
+    const dataArray = []
+
+    const parser = csv()
+    parser.on('data', (row) => {
+      dataArray.push(row)
+    })
+
+    const csvDataBuffer = csvFile.data
+    const csvDataString = csvDataBuffer.toString('utf-8')
+
+    // Pipe the CSV data string through the parser
+    parser.write(csvDataString)
+    parser.end()
+
+    return dataArray
+  } catch (error) {
+    console.error('Error reading CSV data:', error)
+    return null
+  }
+}
 
 export const downloadFile = (url, localFilePath) => {
   const fileStream = fs.createWriteStream(localFilePath)
