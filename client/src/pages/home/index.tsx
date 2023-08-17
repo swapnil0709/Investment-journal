@@ -5,32 +5,49 @@ import AlertTitle from '@mui/material/AlertTitle'
 
 const ExcelReader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isUploaded, setIsUploaded] = useState(false)
+  const [success, setSuccess] = useState(false)
   axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (event.target.files && event.target.files.length > 0) {
       setSelectedFile(event.target.files[0])
     }
   }
-  const handleDownload = () => {
-    // Trigger the download
-    window.location.href =
-      'https://investment-journal-server.vercel.app/download'
-  }
-  const handleUpload = (): void => {
-    if (selectedFile) {
-      const formData = new FormData()
-      formData.append('csvFile', selectedFile)
 
-      axios
-        .post('https://investment-journal-server.vercel.app/upload', formData)
-        .then((response) => {
-          console.log(response.data.message)
-          setIsUploaded(!response.data.isError)
-        })
-        .catch((error) => {
-          console.error('Error:', error)
-        })
+  const handleUploadAndDownload = async () => {
+    if (!selectedFile) {
+      console.error('No file selected.')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('csvFile', selectedFile)
+
+    try {
+      const response = await axios.post<Blob>(
+        'https://investment-journal-server.vercel.app/uploadAndDownload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          responseType: 'blob',
+        }
+      )
+
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+      const url = window.URL.createObjectURL(blob)
+
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'export.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setSuccess(true)
+    } catch (error) {
+      console.error('Error uploading and downloading file:', error)
     }
   }
   return (
@@ -45,17 +62,12 @@ const ExcelReader: React.FC = () => {
         />
       </div>
 
-      {/* <input type='file' accept='.csv' onChange={handleFileChange} /> */}
-      <button disabled={isUploaded} onClick={handleUpload}>
-        Upload CSV
+      <button disabled={!selectedFile} onClick={handleUploadAndDownload}>
+        Upload CSV and Download Excel
       </button>
-      <button disabled={!isUploaded} onClick={handleDownload}>
-        Download Excel
-      </button>
-      {isUploaded && (
+      {success && (
         <Alert severity='success'>
           <AlertTitle>Successfully Uploaded!</AlertTitle>
-          Now click on — <strong>Download Excel!</strong>
         </Alert>
       )}
     </div>

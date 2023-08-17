@@ -24,7 +24,6 @@ import {
   freezeColumns,
   generateFillData,
   setHeadersForSheet,
-  writeExcel,
 } from './excel-utils.js'
 
 // Function to check if a value is a valid date in 'YYYY-MM-DD' format
@@ -44,8 +43,7 @@ export const generateExcel = (array, invalidsArray, totalObject) => {
   generatePortfolioTemplate(invalidsSheet, invalidsArray)
   generateTotalsRow(portfolioSheet, totalObject, array)
   generateMetricsTemplate(metricsSheet, totalObject, array)
-
-  writeExcel(workbook)
+  return workbook
 }
 
 const generateTotalsRow = (portfolioSheet, totalObject, array) => {
