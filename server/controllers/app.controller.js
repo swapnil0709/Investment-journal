@@ -15,7 +15,7 @@ export const getApp = (req, res) => {
 
 export const uploadAndDownload = (req, res) => {
   const uploadedFile = req.file
-
+  console.log({ req, uploadedFile })
   if (!uploadedFile) {
     return res.status(400).json({ error: 'No file uploaded' })
   }
