@@ -1,17 +1,16 @@
 import './App.css'
 import TypingAnimation from './components/typing-animation'
-import ExcelReader from './pages/home'
+import Home from './pages/home'
 
 function App() {
   return (
     <>
+      <h1 className='title'>Welcome To Investment Journal Generator!!</h1>
       <div className='header'>
-        <TypingAnimation text='Welcome To Investment Journal Generator!!' />
-        <br />
         <TypingAnimation text={`Say no to mundane work, when I'm here :) `} />
       </div>
-      <ExcelReader />
-      <div className='signature'>Created by: Swapnil ❤️</div>
+      <Home />
+      <div className='signature'>Created with ❤️ by: Swapnil </div>
     </>
   )
 }
