@@ -9,6 +9,7 @@ import {
   TOTALS_COLOR,
   WHITE_TEXT_COLOR,
 } from './excel-constants.js'
+import csv from 'csv-parser'
 
 export const writeExcel = (workbook) => {
   // Write the workbook to a file
@@ -191,5 +192,32 @@ const applyTextColourOnCondition = (eachData, cell, value, compareType) => {
       italic: true,
       color: { argb: TEXT_RED_COLOR },
     }
+  }
+}
+
+export const parseCsvFile = async (csvFile) => {
+  try {
+    if (!csvFile) {
+      throw new Error(`CSV file not found.`)
+    }
+
+    const dataArray = []
+
+    const parser = csv()
+    parser.on('data', (row) => {
+      dataArray.push(row)
+    })
+    console.log({ csvFile })
+    const csvDataBuffer = csvFile
+    const csvDataString = csvDataBuffer.toString('utf-8')
+
+    // Pipe the CSV data string through the parser
+    parser.write(csvDataString)
+    parser.end()
+
+    return dataArray
+  } catch (error) {
+    console.error('Error reading CSV data:', error)
+    return null
   }
 }

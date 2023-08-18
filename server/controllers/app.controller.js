@@ -13,8 +13,8 @@ export const getApp = (req, res) => {
   res.send('Hello, from server!')
 }
 
-export const uploadAndDownload = (req, res) => {
-  const uploadedFile = req.file
+export const uploadAndDownload = async (req, res) => {
+  const uploadedFile = await req.file
   console.log({ req, uploadedFile })
   if (!uploadedFile) {
     return res.status(400).json({ error: 'No file uploaded' })
@@ -54,7 +54,7 @@ export const uploadAndDownload = (req, res) => {
     })
 }
 
-const generateExcelWorkbook = async (tradebookData) => {
+export const generateExcelWorkbook = async (tradebookData) => {
   const stocksArray = []
 
   try {
