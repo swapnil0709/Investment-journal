@@ -80,7 +80,7 @@ const Home: React.FC = () => {
       {isLoading && <CircularProgress color='secondary' />}
       {isSuccess && (
         <Alert severity='success'>
-          <AlertTitle> Successfully Downloaded! ✅</AlertTitle>
+          <AlertTitle> Successfully Downloaded!</AlertTitle>
         </Alert>
       )}
       {isError && (
