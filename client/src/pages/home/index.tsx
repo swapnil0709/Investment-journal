@@ -9,8 +9,9 @@ const ExcelReader: React.FC = () => {
   const [isError, setIsError] = useState(false)
   axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0])
+    const selectedFile = event.target.files?.[0]
+    if (selectedFile) {
+      setSelectedFile(selectedFile)
     }
   }
 
@@ -22,10 +23,11 @@ const ExcelReader: React.FC = () => {
 
     const formData = new FormData()
     formData.append('csvFile', selectedFile)
-    console.log({ selectedFile, formData })
+    // 'http://localhost:8080/uploadAndDownload',
+    // 'https://investment-journal-server.vercel.app/uploadAndDownload',
 
     try {
-      const response = await axios.post<Blob>(
+      const response = await axios.post(
         'https://investment-journal-server.vercel.app/uploadAndDownload',
         formData,
         {
@@ -53,6 +55,7 @@ const ExcelReader: React.FC = () => {
       console.error('Error uploading and downloading file:', error)
     }
   }
+
   return (
     <div className='logo'>
       <div className='input-wrapper'>
@@ -70,7 +73,7 @@ const ExcelReader: React.FC = () => {
       </button>
       {isSuccess && (
         <Alert severity='success'>
-          <AlertTitle>Successfully Uploaded! ✅</AlertTitle>
+          <AlertTitle>Successfully Downloaded! ✅</AlertTitle>
         </Alert>
       )}
       {isError && (
