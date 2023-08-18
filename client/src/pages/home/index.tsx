@@ -11,6 +11,7 @@ const Home: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   const [isError, setIsError] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const isButtonDisabled = isLoading || !selectedFile
   axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -22,8 +23,28 @@ const Home: React.FC = () => {
 
   const handleUploadAndDownload = async () => {
     setIsLoading(true)
+
     if (!selectedFile) {
       console.error('No file selected.')
+      return
+    }
+    if (
+      selectedFile.type !== 'text/csv' &&
+      !selectedFile.name.toLowerCase().includes('tradebook')
+    ) {
+      setIsError(true)
+      setIsLoading(false)
+      setErrorMessage('Please upload tradebook file in csv format only.')
+      return
+    } else if (selectedFile.type !== 'text/csv') {
+      setIsError(true)
+      setIsLoading(false)
+      setErrorMessage('Please upload a csv file only.')
+      return
+    } else if (!selectedFile.name.toLowerCase().includes('tradebook')) {
+      setIsLoading(false)
+      setIsError(true)
+      setErrorMessage('Please upload tradebook file only without renaming.')
       return
     }
 
@@ -86,6 +107,7 @@ const Home: React.FC = () => {
       {isError && (
         <Alert severity='error'>
           <AlertTitle> An Error Occurred 🙁</AlertTitle>
+          {errorMessage}
         </Alert>
       )}
     </div>
