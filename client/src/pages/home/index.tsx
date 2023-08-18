@@ -3,11 +3,15 @@ import React, { ChangeEvent, useState } from 'react'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import { saveAs } from 'file-saver'
+import { EXCEL_FILE_NAME, SERVER_DOMAIN, TRADE_BOOK_URL } from '../../const'
+import CircularProgress from '@mui/material/CircularProgress'
 
-const ExcelReader: React.FC = () => {
+const Home: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isError, setIsError] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const isButtonDisabled = isLoading || !selectedFile
   axios.defaults.withCredentials = true
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const selectedFile = event.target.files?.[0]
@@ -17,6 +21,7 @@ const ExcelReader: React.FC = () => {
   }
 
   const handleUploadAndDownload = async () => {
+    setIsLoading(true)
     if (!selectedFile) {
       console.error('No file selected.')
       return
@@ -24,12 +29,10 @@ const ExcelReader: React.FC = () => {
 
     const formData = new FormData()
     formData.append('csvFile', selectedFile)
-    // 'http://localhost:8080/uploadAndDownload',
-    // 'https://investment-journal-server.vercel.app/uploadAndDownload',
 
     try {
       const response = await axios.post(
-        'https://investment-journal-server.vercel.app/uploadAndDownload',
+        `${SERVER_DOMAIN}/uploadAndDownload`,
         formData,
         {
           headers: {
@@ -42,25 +45,26 @@ const ExcelReader: React.FC = () => {
       const blob = new Blob([response.data], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       })
-      // const url = window.URL.createObjectURL(blob)
-
-      // const link = document.createElement('a')
-      // link.href = url
-      // link.setAttribute('download', 'investment_journal_v1.0.xlsx')
-      // document.body.appendChild(link)
-      // link.click()
-      // link.remove()
-      // Use FileSaver.js to trigger download
-      saveAs(blob, 'investment_journal_v1.0.xlsx')
+      saveAs(blob, EXCEL_FILE_NAME)
       setIsSuccess(true)
+      setIsError(false)
+      setIsLoading(false)
     } catch (error) {
       setIsError(true)
+      setIsLoading(false)
+      setIsSuccess(false)
       console.error('Error uploading and downloading file:', error)
     }
   }
 
   return (
     <div className='logo'>
+      <p>
+        Upload the tradebook from zerodha in csv format:{' '}
+        <a referrerPolicy='no-referrer' target='_blank' href={TRADE_BOOK_URL}>
+          Link
+        </a>
+      </p>
       <div className='input-wrapper'>
         <input
           type='file'
@@ -70,22 +74,22 @@ const ExcelReader: React.FC = () => {
           placeholder='Upload file'
         />
       </div>
-
-      <button disabled={!selectedFile} onClick={handleUploadAndDownload}>
-        Upload CSV and Download Excel
+      <button disabled={isButtonDisabled} onClick={handleUploadAndDownload}>
+        {isLoading ? `Loading ...` : `Upload CSV and Download Excel`}
       </button>
+      {isLoading && <CircularProgress color='secondary' />}
       {isSuccess && (
         <Alert severity='success'>
-          <AlertTitle>Successfully Downloaded! ✅</AlertTitle>
+          <AlertTitle> Successfully Downloaded! ✅</AlertTitle>
         </Alert>
       )}
       {isError && (
         <Alert severity='error'>
-          <AlertTitle>An Error Occurred 🙁</AlertTitle>
+          <AlertTitle> An Error Occurred 🙁</AlertTitle>
         </Alert>
       )}
     </div>
   )
 }
 
-export default ExcelReader
+export default Home

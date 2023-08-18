@@ -8,6 +8,8 @@
 .logo {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 20px;
   padding: 1.5em;
   will-change: filter;
@@ -69,7 +71,7 @@
 
 .header{
   position: absolute;
-  top: 40px;
+  top: 100px;
 }
 
 .input-wrapper {
@@ -120,4 +122,9 @@
   position: absolute;
   bottom: 40px;
   right: 40px;
+}
+.title{
+  position: absolute;
+  top: 10px;
+  left: 25%;
 }
