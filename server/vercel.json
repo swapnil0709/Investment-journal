@@ -4,10 +4,10 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "./index.js",
+      "dest": "/",
       "methods": ["GET", "POST"],
       "headers": {
-        "Access-Control-Allow-Origin": "https://investment-journal.vercel.app"
+        "Access-Control-Allow-Origin": "*"
       }
     }
   ]
