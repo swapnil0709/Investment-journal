@@ -28,7 +28,7 @@ const ExcelReader: React.FC = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:8080/uploadAndDownload',
+        'https://investment-journal-server.vercel.app/uploadAndDownload',
         formData,
         {
           headers: {
@@ -45,7 +45,7 @@ const ExcelReader: React.FC = () => {
 
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', 'export.xlsx')
+      link.setAttribute('download', 'investment_journal_v1.0.xlsx')
       document.body.appendChild(link)
       link.click()
       link.remove()
