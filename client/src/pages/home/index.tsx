@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { ChangeEvent, useState } from 'react'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
+import { saveAs } from 'file-saver'
 
 const ExcelReader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -41,14 +42,16 @@ const ExcelReader: React.FC = () => {
       const blob = new Blob([response.data], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       })
-      const url = window.URL.createObjectURL(blob)
+      // const url = window.URL.createObjectURL(blob)
 
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', 'investment_journal_v1.0.xlsx')
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      // const link = document.createElement('a')
+      // link.href = url
+      // link.setAttribute('download', 'investment_journal_v1.0.xlsx')
+      // document.body.appendChild(link)
+      // link.click()
+      // link.remove()
+      // Use FileSaver.js to trigger download
+      saveAs(blob, 'investment_journal_v1.0.xlsx')
       setIsSuccess(true)
     } catch (error) {
       setIsError(true)
