@@ -29,7 +29,7 @@ const ExcelReader: React.FC = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:8080/uploadAndDownload',
+        'https://investment-journal-server.vercel.app/uploadAndDownload',
         formData,
         {
           headers: {
