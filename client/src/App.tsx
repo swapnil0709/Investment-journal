@@ -4,14 +4,18 @@ import Home from './pages/home'
 
 function App() {
   return (
-    <>
-      <h1 className='title'>Welcome To Investment Journal Generator!!</h1>
-      <div className='header'>
+    <div className='container'>
+      <div className='header center-item text-center'>
+        <h1 className='title'>Welcome To Investment Journal Generator!!</h1>
         <TypingAnimation text={`Say no to mundane work, when I'm here :) `} />
       </div>
-      <Home />
-      <div className='signature'>Created with ❤️ by: Swapnil </div>
-    </>
+      <div className='content center-item'>
+        <Home />
+      </div>
+      <div className='footer logo center-item'>
+        <div className='signature'>Created with ❤️ by: Swapnil </div>
+      </div>
+    </div>
   )
 }
 
