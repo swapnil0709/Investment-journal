@@ -1,6 +1,5 @@
 import https from 'https'
 import fs from 'fs'
-import AdmZip from 'adm-zip'
 import csv from 'csv-parser'
 import path from 'path'
 import unzipper from 'unzipper'
@@ -107,70 +106,6 @@ export const readCsvDataFromDatabase = async (fileName) => {
     console.error('Error reading CSV data:', error)
     return null
   }
-}
-
-export const downloadFile = (url, localFilePath) => {
-  const fileStream = fs.createWriteStream(localFilePath)
-  https
-    .get(url, (response) => {
-      response.pipe(fileStream)
-
-      fileStream.on('finish', () => {
-        fileStream.close()
-        console.log('File downloaded and saved:', localFilePath)
-      })
-    })
-    .on('error', (err) => {
-      fs.unlink(localFilePath, () => {}) // Delete the file if an error occurs
-      console.error('Error downloading file:', err.message)
-    })
-}
-
-export const downloadZipFile = (url, extractionPath) => {
-  https
-    .get(url, (response) => {
-      if (response.statusCode !== 200) {
-        console.error('Failed to download the zip file')
-        return
-      }
-      const isNSE = url.includes('nse')
-      const fileName = isNSE ? 'nse-dump.csv' : 'bse-dump.csv'
-      const data = []
-      response.on('data', (chunk) => data.push(chunk))
-      response.on('end', () => {
-        const buffer = Buffer.concat(data)
-        const zip = new AdmZip(buffer)
-
-        try {
-          fs.mkdirSync(extractionPath, { recursive: true }) // Create extraction directory
-          zip.extractAllTo(extractionPath, true)
-          console.log('Zip file extracted to:', extractionPath)
-
-          // List the files in the extraction directory
-          const extractedFiles = fs.readdirSync(extractionPath)
-
-          // Assuming there's only one CSV file in the extraction directory
-
-          const originalCsvPath = path.join(extractionPath, extractedFiles[0])
-          const newCsvPath = path.join(extractionPath, fileName) // Replace 'new_filename.csv' with your desired new name
-
-          // If a file with the new name already exists, remove it
-          if (fs.existsSync(newCsvPath)) {
-            fs.unlinkSync(newCsvPath)
-          }
-
-          // Rename the CSV file
-          fs.renameSync(originalCsvPath, newCsvPath)
-
-          console.log('CSV file renamed.')
-        } catch (error) {
-          console.error('Error extracting zip file:', error)
-        }
-      })
-    })
-    .on('error', (err) => {
-      console.error('Error downloading zip file:', err.message)
-    })
 }
 
 export const readCSVFile = (filePath) => {
@@ -338,20 +273,6 @@ export const getMetricsData = (allTrades, totalGain, param) => {
     avgLoss,
     gainLoss,
     multipleRatio,
-  }
-}
-
-// Function to check if a directory is empty
-export const isDirectoryEmpty = (path) => {
-  createDirectoryIfNotExists(path)
-  const files = fs.readdirSync(path)
-  return files.length === 0
-}
-
-// Function to create a directory if it doesn't exist
-const createDirectoryIfNotExists = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true })
   }
 }
 
