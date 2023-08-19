@@ -41,7 +41,7 @@ export const downloadExtractAndStoreCsvFiles = async (zipUrl) => {
   try {
     const isNSE = zipUrl.includes('nse')
     const fileName = isNSE ? 'nse-dump.csv' : 'bse-dump.csv'
-    console.log({ fileName })
+
     const response = await axios.get(zipUrl, { responseType: 'arraybuffer' })
     const zipBuffer = Buffer.from(response.data)
     const extractedFiles = await unzipper.Open.buffer(zipBuffer)
@@ -286,3 +286,6 @@ export const isCSVFilePresent = (directoryPath, fileName) => {
     return false
   }
 }
+
+export const sortArrayByDate = (array, date) =>
+  array.sort((a, b) => new Date(a[date]) - new Date(b[date]))

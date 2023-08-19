@@ -103,7 +103,7 @@ export const combineTransactions = (stocksArray) => {
   ]
   //! DEBUGGER FOR STOCK - Uncomment & replace the name of the stock for debugging purposes
   // const debugStock = stocksArray.filter(
-  //   (eachData) => eachData.Symbol === 'HARSHA'
+  //   (eachData) => eachData.Symbol === 'PREMEXPLQ'
   // )
 
   //* Processing transactions for each symbol and push the results to resultArray
@@ -112,6 +112,7 @@ export const combineTransactions = (stocksArray) => {
       //! DEBUGGER FOR STOCK - Replace stocksArray with debugStock
       (eachData) => eachData.Symbol === eachSymbol
     )
+    // console.log(allTransactionsForSymbol)
     const filteredTransactionsForSymbol = removeInvalidTransactions(
       allTransactionsForSymbol,
       invalidTransactionsArray

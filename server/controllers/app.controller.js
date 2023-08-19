@@ -7,7 +7,11 @@ import {
   combineTransactions,
   generateTotalObject,
 } from '../process.js'
-import { addIdForEachRecord, readCsvDataFromDatabase } from '../utils.js'
+import {
+  addIdForEachRecord,
+  readCsvDataFromDatabase,
+  sortArrayByDate,
+} from '../utils.js'
 
 export const getApp = (req, res) => {
   res.send('Hello, from server!')
@@ -15,7 +19,7 @@ export const getApp = (req, res) => {
 
 export const uploadAndDownload = async (req, res) => {
   const uploadedFile = await req.file
-  console.log({ req, uploadedFile })
+
   if (!uploadedFile) {
     return res.status(400).json({ error: 'No file uploaded' })
   }
@@ -88,7 +92,9 @@ export const generateExcelWorkbook = async (tradebookData) => {
     console.error('An error occurred:', error)
   }
   const [resultArray, invalidsArray] = combineTransactions(stocksArray)
-  const finalStocksData = addIdForEachRecord(resultArray)
+  const finalStocksData = addIdForEachRecord(
+    sortArrayByDate(resultArray, 'Latest Buy Date')
+  )
   const finalInvalidsData = addIdForEachRecord(invalidsArray)
   const totalObject = generateTotalObject(resultArray)
   return generateExcel(finalStocksData, finalInvalidsData, totalObject)
