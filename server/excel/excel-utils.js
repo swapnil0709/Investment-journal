@@ -207,7 +207,7 @@ export const parseCsvFile = async (csvFile) => {
     parser.on('data', (row) => {
       dataArray.push(row)
     })
-    console.log({ csvFile })
+
     const csvDataBuffer = csvFile
     const csvDataString = csvDataBuffer.toString('utf-8')
 

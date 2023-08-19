@@ -31,6 +31,7 @@ cron.schedule('0 8 * * * ', () => {
 })
 
 app.use(express.json({ limit: '10mb' }))
+// app.use(cors())
 app.use(
   cors({
     origin: [CLIENT_DOMAIN],
@@ -51,7 +52,7 @@ app.post('/uploadAndDownload', upload.single('csvFile'), async (req, res) => {
 
   const tradeBookData = await parseCsvFile(uploadedFile.buffer)
   const workBook = await generateExcelWorkbook(tradeBookData)
-  console.log({ workBook })
+
   res.setHeader('Content-Disposition', 'attachment; filename=export.xlsx')
   res.setHeader(
     'Content-Type',
