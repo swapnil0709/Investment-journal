@@ -12,18 +12,15 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.14.5",
-    "@tanstack/react-query": "^4.32.6",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/joy": "5.0.0-beta.2",
     "@types/file-saver": "^2.0.5",
     "axios": "^1.4.0",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "stock-nse-india": "^1.1.2",
-    "xlsx": "^0.18.5"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "^4.32.5",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
