@@ -17,7 +17,6 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const isButtonDisabled = isLoading || !selectedFile
-  axios.defaults.withCredentials = true
 
   // * Functions
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {

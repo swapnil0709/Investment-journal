@@ -6,24 +6,35 @@ import express from 'express'
 import cron from 'node-cron'
 import cors from 'cors'
 import connectDB from './mongodb/connect.js'
-import { PORT } from './config.js'
+import { CLIENT_DOMAIN, PORT } from './config.js'
 import appRouter from './routes/app.routes.js'
 import multer from 'multer'
 import { generateExcelWorkbook } from './controllers/app.controller.js'
-import csvParser from 'csv-parser'
-import { Readable } from 'stream'
 import { parseCsvFile } from './excel/excel-utils.js'
 
 dotenv.config()
 
 const app = express()
 
+// Schedule cron jobs
+
+cron.schedule('0 20 * * * ', () => {
+  console.log(`cron ran successfully at 8pm`)
+  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
+  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+})
+
+cron.schedule('0 8 * * * ', () => {
+  console.log(`cron ran successfully at 8am`)
+  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
+  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+})
+
 app.use(express.json({ limit: '10mb' }))
 app.use(
   cors({
-    origin: ['https://investment-journal.vercel.app'],
+    origin: [CLIENT_DOMAIN],
     methods: ['POST', 'GET'],
-    credentials: true,
   })
 )
 
@@ -65,36 +76,10 @@ const startServer = async () => {
     // connect to mongodb
     connectDB(process.env.MONGODB_URL)
     app.listen(PORT, () =>
-      console.log(
-        // `Server started on port http://localhost:${PORT}`
-        `Server started on port https://investment-journal.vercel.app/:${PORT}`
-      )
+      console.log(`Server started successfully at http://localhost:${PORT}`)
     )
   } catch (error) {
     console.error(`Error starting server ${error}`)
   }
 }
 startServer()
-
-// Schedule cron jobs
-
-cron.schedule('0 20 * * * ', () => {
-  console.log(`cron ran successfully at 8pm`)
-  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
-})
-
-cron.schedule('0 8 * * * ', () => {
-  console.log(`cron ran successfully at 8am`)
-  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
-})
-
-// Use the cors middleware to allow requests from the React frontend
-// app.use(
-//   cors({
-//     origin: ['https://investment-journal.vercel.app'],
-//     methods: ['POST', 'GET'],
-//     credentials: true,
-//   })
-// )

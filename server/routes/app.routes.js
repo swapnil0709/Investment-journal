@@ -1,6 +1,5 @@
 import express from 'express'
-import { getApp, uploadAndDownload } from '../controllers/app.controller.js'
-// import { multerUpload } from './utils.js'
+import { getApp } from '../controllers/app.controller.js'
 import multer from 'multer'
 
 const storage = multer.memoryStorage() // Store files in memory
