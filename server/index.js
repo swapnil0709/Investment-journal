@@ -18,7 +18,7 @@ const app = express()
 
 // Schedule cron jobs
 // '0 20 * * * '  8PM
-cron.schedule('30 12 * * *', () => {
+cron.schedule('45 12 * * *', () => {
   console.log(`cron ran successfully at 8pm`)
   downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
   downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
