@@ -17,15 +17,9 @@ dotenv.config()
 const app = express()
 
 // Schedule cron jobs
-
-cron.schedule('0 20 * * * ', () => {
+// '0 20 * * * '  8PM
+cron.schedule('30 12 * * *', () => {
   console.log(`cron ran successfully at 8pm`)
-  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
-})
-
-cron.schedule('0 8 * * * ', () => {
-  console.log(`cron ran successfully at 8am`)
   downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
   downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
 })
