@@ -10,9 +10,9 @@ import { dirname, join } from 'path'
 // Get the directory name of the current module
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export const BSE_DUMP_URL = `https://www.bseindia.com/download/BhavCopy/Equity/BSE_EQ_BHAVCOPY_${BSE_DATE}.ZIP`
+export const BSE_DUMP_URL = `https://www.bseindia.com/download/BhavCopy/Equity/BSE_EQ_BHAVCOPY_21082023.ZIP`
 
-export const NSE_DUMP_URL = `https://archives.nseindia.com/content/historical/EQUITIES/${CURRENT_YEAR}/${getCurrentMonthAbbreviation()}/cm${NSE_DATE}bhav.csv.zip`
+export const NSE_DUMP_URL = `https://archives.nseindia.com/content/historical/EQUITIES/${CURRENT_YEAR}/${getCurrentMonthAbbreviation()}/cm21AUG2023bhav.csv.zip`
 
 export const BSE_DIR_PATH = join(__dirname, 'downloads', 'bse-dump')
 export const NSE_DIR_PATH = join(__dirname, 'downloads', 'nse-dump')
