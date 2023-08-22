@@ -18,8 +18,8 @@ const app = express()
 
 // Schedule cron jobs
 // '0 20 * * * '  8PM
-cron.schedule('45 12 * * *', () => {
-  console.log(`cron ran successfully at 8pm`)
+cron.schedule('* * * * *', () => {
+  console.log(`cron ran successfully at node-cron`)
   downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
   downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
 })
@@ -37,10 +37,10 @@ app.use(
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
-app.get('/api/cron', (req, res) => {
+app.get('/api/cron', async (req, res) => {
   console.log(`cron ran on vercel`)
-  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+  await downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
+  await downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
   res.status(200).end('Hello Cron!')
 })
 
