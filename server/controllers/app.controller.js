@@ -79,13 +79,39 @@ export const generateExcelWorkbook = async (tradebookData) => {
         const tradesForSymbolPerDay = tradesPerDay.filter(
           ({ symbol }) => symbol === eachSymbol
         )
-
-        const stockObject = generateStockObject(
-          tradesForSymbolPerDay,
-          nseData,
-          bseData
+        const someBuyTransactionExists = tradesForSymbolPerDay.some(
+          ({ trade_type }) => trade_type === 'buy'
         )
-        stocksArray.push(stockObject)
+        const someSellTransactionExists = tradesForSymbolPerDay.some(
+          ({ trade_type }) => trade_type === 'sell'
+        )
+        // Handle buy-sell transaction for a stock in same day:
+
+        if (someBuyTransactionExists && someSellTransactionExists) {
+          const filterBuyTransaction = tradesForSymbolPerDay.filter(
+            ({ trade_type }) => trade_type === 'buy'
+          )
+          const filterSellTransaction = tradesForSymbolPerDay.filter(
+            ({ trade_type }) => trade_type === 'sell'
+          )
+          const arrayOfArrays = [filterBuyTransaction, filterSellTransaction]
+
+          for (const eachTransaction of arrayOfArrays) {
+            const stockObject = generateStockObject(
+              eachTransaction,
+              nseData,
+              bseData
+            )
+            stocksArray.push(stockObject)
+          }
+        } else {
+          const stockObject = generateStockObject(
+            tradesForSymbolPerDay,
+            nseData,
+            bseData
+          )
+          stocksArray.push(stockObject)
+        }
       })
     })
   } catch (error) {

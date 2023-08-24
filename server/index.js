@@ -19,10 +19,13 @@ const app = express()
 // Schedule cron jobs
 // '0 20 * * * '  8PM
 cron.schedule('* * * * *', () => {
-  console.log(`cron ran successfully at node-cron`)
-  downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+  console.log(`cron ran successfully every min`)
 })
+// cron.schedule('* * * * *', () => {
+//   console.log(`cron ran successfully at node-cron`)
+//   downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
+//   downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+// })
 
 app.use(express.json({ limit: '10mb' }))
 // app.use(cors())

@@ -392,7 +392,7 @@ const handleLeftOverBuyQty = (transaction1, leftOverQty) => {
   )
   const buyPrice = transaction1['Buy Price']
   const stopLoss = getStopLossPrice(buyPrice)
-  const unrealizedGainPer = getProfitPer(unrealizedGain, investedAmount)
+  const unrealizedGainPer = formatValue((unrealizedGain / investedAmount) * 100)
   const exchange = transaction1.Exchange
   return {
     ...transaction1,
@@ -403,7 +403,7 @@ const handleLeftOverBuyQty = (transaction1, leftOverQty) => {
     'Realized Gain': '',
     'Unrealized Gain': unrealizedGain,
     'Realized Gain %': '',
-    'Unrealized Gain %': unrealizedGainPer,
+    'Unrealized Gain %': `${unrealizedGainPer}%`,
     SL: stopLoss,
     'SL %': '10%',
     'Loss at SL': getStopLossAmount(stopLoss, buyPrice, leftOverQty),
