@@ -1,9 +1,7 @@
 import * as dotenv from 'dotenv'
-import { BSE_DUMP_URL, NSE_DUMP_URL } from './const.js'
 
 import { downloadExtractAndStoreCsvFiles } from './utils.js'
 import express from 'express'
-import cron from 'node-cron'
 import cors from 'cors'
 import connectDB from './mongodb/connect.js'
 import { CLIENT_DOMAIN, PORT } from './config.js'
@@ -15,17 +13,6 @@ import { parseCsvFile } from './excel/excel-utils.js'
 dotenv.config()
 
 const app = express()
-
-// Schedule cron jobs
-// '0 20 * * * '  8PM
-cron.schedule('* * * * *', () => {
-  console.log(`cron ran successfully every min`)
-})
-// cron.schedule('* * * * *', () => {
-//   console.log(`cron ran successfully at node-cron`)
-//   downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-//   downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
-// })
 
 app.use(express.json({ limit: '10mb' }))
 // app.use(cors())
@@ -40,10 +27,9 @@ app.use(
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
-app.get('/api/cron', async (req, res) => {
+app.get('/api/cron', (req, res) => {
   console.log(`cron ran on vercel`)
-  await downloadExtractAndStoreCsvFiles(NSE_DUMP_URL)
-  await downloadExtractAndStoreCsvFiles(BSE_DUMP_URL)
+  downloadExtractAndStoreCsvFiles(new Date())
   res.status(200).end('Hello Cron!')
 })
 
