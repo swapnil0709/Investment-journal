@@ -5,15 +5,9 @@ import path from 'path'
 import unzipper from 'unzipper'
 import axios from 'axios'
 import CsvFile from './mongodb/models/csvfile.js'
+import { BASE_BSE_URL, BASE_NSE_URL } from './const.js'
 
-const today = new Date()
-const day = String(today.getDate()).padStart(2, '0')
-const month = String(today.getMonth() + 1).padStart(2, '0') // Months are 0-based
-export const CURRENT_YEAR = today.getFullYear()
-
-export const BSE_DATE = `${day}${month}${CURRENT_YEAR}`
-
-export const getCurrentMonthAbbreviation = () => {
+export const getCurrentMonthAbbreviation = (givenDate) => {
   const months = [
     'JAN',
     'FEB',
@@ -28,18 +22,50 @@ export const getCurrentMonthAbbreviation = () => {
     'NOV',
     'DEC',
   ]
-  const today = new Date()
-  const currentMonth = today.getMonth()
+  const currentMonth = givenDate.getMonth()
 
   const currentMonthAbbreviation = months[currentMonth]
   return currentMonthAbbreviation
 }
 
-export const NSE_DATE = `${day}${getCurrentMonthAbbreviation()}${CURRENT_YEAR}`
+export const getBseUrl = (givenDate) => {
+  const day = String(givenDate.getDate()).padStart(2, '0')
+  const month = String(givenDate.getMonth() + 1).padStart(2, '0') // Months are 0-based
+  const currentYear = givenDate.getFullYear()
+  const bseDate = `${day}${month}${currentYear}`
+  return `${BASE_BSE_URL}${bseDate}.ZIP`
+}
 
-export const downloadExtractAndStoreCsvFiles = async (zipUrl) => {
+export const getNseUrl = (givenDate) => {
+  const day = String(givenDate.getDate()).padStart(2, '0')
+  const monthAbr = getCurrentMonthAbbreviation(givenDate)
+  const currentYear = givenDate.getFullYear()
+  const nseDate = `${day}${getCurrentMonthAbbreviation(
+    givenDate
+  )}${currentYear}`
+  return `${BASE_NSE_URL}${currentYear}/${monthAbr}/cm${nseDate}bhav.csv.zip`
+}
+
+export const downloadExtractAndStoreCsvFiles = async (date, exchange = '') => {
+  if (exchange === 'nse') {
+    const nseUrl = getNseUrl(date)
+    await processURL(nseUrl, date)
+  } else if (exchange === 'bse') {
+    const bseUrl = getBseUrl(date)
+    await processURL(bseUrl, date)
+  } else {
+    const nseUrl = getNseUrl(date)
+    const bseUrl = getBseUrl(date)
+    await processURL(nseUrl, date)
+    await processURL(bseUrl, date)
+  }
+}
+
+const processURL = async (zipUrl, date) => {
+  const isNSE = zipUrl.includes('nse')
+  const exchange = isNSE ? 'nse' : 'bse'
+
   try {
-    const isNSE = zipUrl.includes('nse')
     const fileName = isNSE ? 'nse-dump.csv' : 'bse-dump.csv'
 
     const response = await axios.get(zipUrl, { responseType: 'arraybuffer' })
@@ -75,10 +101,14 @@ export const downloadExtractAndStoreCsvFiles = async (zipUrl) => {
 
     console.log('CSV files extracted, renamed, and updated in MongoDB.')
   } catch (error) {
-    console.error('Error occurred while processing the ZIP file:', error)
+    console.error(
+      'Error occurred while processing the ZIP file, trying to download for a prev date',
+      error
+    )
+    const prevDate = getYesterdayExcludingWeekends(date)
+    downloadExtractAndStoreCsvFiles(prevDate, exchange)
   }
 }
-
 export const readCsvDataFromDatabase = async (fileName) => {
   try {
     const csvFile = await CsvFile.findOne({ name: fileName })
@@ -289,3 +319,27 @@ export const isCSVFilePresent = (directoryPath, fileName) => {
 
 export const sortArrayByDate = (array, date) =>
   array.sort((a, b) => new Date(a[date]) - new Date(b[date]))
+
+export function getYesterdayExcludingWeekends(date) {
+  const tmpDate = new Date(date)
+  const dayOfWeek = tmpDate.getDay()
+
+  // If it's Monday, subtract 3 days to get the previous Friday.
+  if (dayOfWeek === 1) {
+    tmpDate.setDate(tmpDate.getDate() - 3)
+  } else {
+    // For other weekdays, simply subtract 1 day to get the previous day.
+    tmpDate.setDate(tmpDate.getDate() - 1)
+  }
+
+  // Check if the result is a Saturday or Sunday and adjust accordingly.
+  if (tmpDate.getDay() === 0) {
+    // Sunday
+    tmpDate.setDate(tmpDate.getDate() - 2) // Subtract 2 days to get the previous Friday.
+  } else if (tmpDate.getDay() === 6) {
+    // Saturday
+    tmpDate.setDate(tmpDate.getDate() - 1) // Subtract 1 day to get the previous Friday.
+  }
+
+  return tmpDate
+}
