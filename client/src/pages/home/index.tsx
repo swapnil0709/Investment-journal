@@ -17,7 +17,8 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const isButtonDisabled = isLoading || !selectedFile
-
+  const [refreshLtp, setRefreshLtp] = useState(false)
+  const [disableRefresh, setDisableRefresh] = useState(false)
   // * Functions
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const selectedFile = event.target.files?.[0]
@@ -32,6 +33,15 @@ const Home: React.FC = () => {
     } else {
       setIsError(false)
     }
+  }
+
+  const handleRefresh = () => {
+    setRefreshLtp(true)
+    axios.get(`${SERVER_DOMAIN}/api/cron`)
+    setTimeout(() => {
+      setRefreshLtp(false)
+      setDisableRefresh(true)
+    }, 2000)
   }
 
   const handleUploadAndDownload = async () => {
@@ -110,6 +120,14 @@ const Home: React.FC = () => {
           placeholder='Upload file'
         />
       </div>
+      <Button
+        disabled={disableRefresh}
+        loading={refreshLtp}
+        variant='solid'
+        onClick={handleRefresh}
+      >
+        {disableRefresh ? 'Done' : 'Refresh LTP'}
+      </Button>
       <Button
         disabled={isButtonDisabled}
         loading={isLoading}
