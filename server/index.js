@@ -9,6 +9,7 @@ import appRouter from './routes/app.routes.js'
 import multer from 'multer'
 import { generateExcelWorkbook } from './controllers/app.controller.js'
 import { parseCsvFile } from './excel/excel-utils.js'
+import CsvFile from './mongodb/models/csvfile.js'
 
 dotenv.config()
 
@@ -29,7 +30,15 @@ const upload = multer({ storage: storage })
 
 app.get('/api/cron', async (req, res) => {
   console.log(`cron ran on vercel`)
-  await downloadExtractAndStoreCsvFiles(new Date())
+  const currentDate = new Date().toISOString().slice(0, 10)
+  // Check if a record with the same name already exists
+  const existingRecord = await CsvFile.findOne({ createdDate: currentDate })
+
+  if (!existingRecord) {
+    await downloadExtractAndStoreCsvFiles(new Date())
+  } else {
+    console.log('File already exists')
+  }
   res.status(200).end('Hello Cron!')
 })
 
