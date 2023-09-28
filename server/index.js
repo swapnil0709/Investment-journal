@@ -27,9 +27,9 @@ app.use(
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
-app.get('/api/cron', (req, res) => {
+app.get('/api/cron', async (req, res) => {
   console.log(`cron ran on vercel`)
-  downloadExtractAndStoreCsvFiles(new Date())
+  await downloadExtractAndStoreCsvFiles(new Date())
   res.status(200).end('Hello Cron!')
 })
 
