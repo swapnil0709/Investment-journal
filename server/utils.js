@@ -94,6 +94,7 @@ const processURL = async (zipUrl, date) => {
           name: newName,
           data: csvBuffer,
           contentType: 'text/csv',
+          createdDate: new Date().toISOString().slice(0, 10),
         })
         await newCsvFile.save()
       }
